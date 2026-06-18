@@ -1,31 +1,51 @@
-# Local development only. Coolify uses the Dockerfile + a managed Postgres.
+# Production stack for Coolify (Build Pack: Docker Compose).
+#
+# Nothing is hardcoded. Coolify auto-generates every secret from the
+# SERVICE_* magic variables and exposes them as editable env vars:
+#   SERVICE_FQDN_PAYLOAD_3000   -> public domain, routed to container port 3000
+#   SERVICE_BASE64_64_PAYLOADSECRET -> 64-char Payload secret
+#   SERVICE_USER_POSTGRES       -> generated DB user
+#   SERVICE_PASSWORD_POSTGRES   -> generated DB password
+# The `:-` fallbacks let the same file also run locally via `docker compose up`.
 services:
   payload:
-    image: node:22-alpine
-    ports:
-      - '3000:3000'
-    volumes:
-      - .:/home/node/app
-      - node_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
-    command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Public URL (Coolify fills SERVICE_FQDN_PAYLOAD_3000 with https://<domain>).
+      - SERVICE_FQDN_PAYLOAD_3000
+      - PAYLOAD_PUBLIC_SERVER_URL=${SERVICE_FQDN_PAYLOAD_3000:-http://localhost:3000}
+      # Override to allow your site's domains to call the API, comma-separated.
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
+      # Secret used to sign tokens.
+      - PAYLOAD_SECRET=${SERVICE_BASE64_64_PAYLOADSECRET:-change-me-locally}
+      # Database connection, assembled from the generated Postgres creds.
+      - DATABASE_URI=postgres://${SERVICE_USER_POSTGRES:-postgres}:${SERVICE_PASSWORD_POSTGRES:-postgres}@postgres:5432/${POSTGRES_DB:-payload}
     depends_on:
-      - postgres
-    env_file:
-      - .env
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://127.0.0.1:3000/admin/login']
+      interval: 10s
+      timeout: 20s
+      retries: 15
+      start_period: 60s
 
   postgres:
-    restart: always
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: tzhk
+      - POSTGRES_USER=${SERVICE_USER_POSTGRES:-postgres}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-payload}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
+    healthcheck:
+      # -h 127.0.0.1 forces TCP auth (avoids the "peer authentication" failure).
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 20s
+      retries: 10
 
 volumes:
   pgdata:
-  node_modules:
