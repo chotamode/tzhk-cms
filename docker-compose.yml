@@ -16,10 +16,12 @@ services:
     environment:
       # Declared so Coolify sets up proxy routing to container port 3000.
       - SERVICE_FQDN_PAYLOAD_3000
-      # Public URL of the CMS. Must be a full URL *with scheme* — SERVICE_URL_*
-      # gives https://<domain>, unlike SERVICE_FQDN_* which is the bare host.
-      # Prefer the clean custom domain, fall back to the auto-generated one.
-      - PAYLOAD_PUBLIC_SERVER_URL=${SERVICE_URL_PAYLOAD:-${SERVICE_URL_PAYLOAD_3000:-http://localhost:3000}}
+      # Public URL of the CMS. Use ONLY the clean SERVICE_URL_PAYLOAD
+      # (https://payload.tzhk.dev). We deliberately do NOT fall back to the
+      # *_3000 variants — Coolify appends ":3000" to those, which is a broken
+      # public URL (browsers would hit port 3000 over TLS). If unset, leave it
+      # empty so Payload derives the URL from the incoming request instead.
+      - PAYLOAD_PUBLIC_SERVER_URL=${SERVICE_URL_PAYLOAD:-}
       # Override to allow your site's domains to call the API, comma-separated.
       - CORS_ORIGINS=${CORS_ORIGINS:-}
       # Secret used to sign tokens.
@@ -30,7 +32,8 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ['CMD', 'wget', '-q', '--spider', 'http://127.0.0.1:3000/admin/login']
+      # busybox wget (Alpine) has no --spider; -O /dev/null works everywhere.
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:3000/admin/login']
       interval: 10s
       timeout: 20s
       retries: 15

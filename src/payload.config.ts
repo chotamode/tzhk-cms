@@ -46,6 +46,12 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
+    // Auto-sync the schema to the database on boot. Payload disables this by
+    // default in production (NODE_ENV=production) and expects migrations, but
+    // we ship no migration files yet — without push the tables are never
+    // created and /admin fails with a DB error. Keep it on for now; set
+    // PAYLOAD_DB_PUSH=false once a proper migration workflow is in place.
+    push: process.env.PAYLOAD_DB_PUSH !== 'false',
   }),
   sharp,
   localization: {
