@@ -15,7 +15,21 @@ import type { User } from './payload-types'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// Public URL of this CMS (e.g. https://cms.tzhk.dev). Set via env so nothing
+// is hardcoded; Coolify injects it from SERVICE_FQDN. Optional locally.
+const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
+
+// Comma-separated list of frontend origins allowed to call the API
+// (e.g. "https://tzhk.dev,https://www.tzhk.dev"). Defaults to the CMS origin.
+const allowedOrigins = (process.env.CORS_ORIGINS || serverURL)
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean)
+
 export default buildConfig({
+  ...(serverURL ? { serverURL } : {}),
+  cors: allowedOrigins.length ? allowedOrigins : undefined,
+  csrf: allowedOrigins.length ? allowedOrigins : undefined,
   admin: {
     user: Users.slug,
     importMap: {

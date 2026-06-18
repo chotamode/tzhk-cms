@@ -1,0 +1,34 @@
+# Local development with hot reload. Run with:
+#   docker compose -f docker-compose.dev.yml up
+# (The plain docker-compose.yml is the production/Coolify stack.)
+services:
+  payload:
+    image: node:22-alpine
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/home/node/app
+      - node_modules:/home/node/app/node_modules
+    working_dir: /home/node/app/
+    command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev"
+    depends_on:
+      - postgres
+    environment:
+      - PAYLOAD_SECRET=dev-secret-change-me
+      - DATABASE_URI=postgres://postgres:postgres@postgres:5432/payload
+
+  postgres:
+    restart: always
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payload
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+volumes:
+  pgdata:
+  node_modules:
