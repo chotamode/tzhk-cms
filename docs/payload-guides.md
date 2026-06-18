@@ -65,6 +65,47 @@ Official workflow (https://payloadcms.com/docs/database/migrations):
   doing before the client uploads real media, since container storage is
   ephemeral.
 
+## Multi-tenancy & access control
+
+Plugin: `@payloadcms/plugin-multi-tenant`. Reference: the official example at
+https://github.com/payloadcms/payload/tree/main/examples/multi-tenant and
+https://payloadcms.com/docs/plugins/multi-tenant.
+
+What the plugin does for us (config in `payload.config.ts`):
+- Adds a `tenant` relationship field to `portfolio` and `media`.
+- Adds a `tenants` array field to `users` (auto, `includeDefaultField` default).
+- Shows a tenant selector in the admin and filters list views by tenant.
+- `userHasAccessToAllTenants: (u) => u.isSuperAdmin` lets super-admins see all.
+
+How our model maps to the example: the official example uses a `roles`
+select (`super-admin`/`user` + tenant roles `tenant-admin`/`tenant-viewer`). We
+use a simpler boolean `isSuperAdmin`. That is fine — but the example's
+**access control is not optional**, and the starter we began from shipped none.
+
+Access rules we enforce (verified with the Local API):
+- **`users` collection** (`src/collections/Users.ts`): `create`/`delete` =
+  super-admins only; `read`/`update` = self or super-admin.
+- **`isSuperAdmin` field**: `update` allowed for super-admins only.
+  > Verified: without this, a regular tenant user can promote themselves to
+  > super-admin via `PATCH /api/users/:id`. With it, the field update is denied.
+- **`portfolio` / `media`**: `read: () => true` so the decoupled frontend can
+  read them publicly. Verified that public (no-user) reads still return tenant
+  content. Writes go through the admin (authenticated).
+- First user: create access returns false for anonymous requests, but Payload's
+  **"create first user"** admin screen bypasses access — bootstrap there, and
+  tick `isSuperAdmin` on that first account.
+
+When adding more client-users later, consider tenant-scoped write access on
+content collections (the plugin's `getTenantAccess` /
+`@payloadcms/plugin-multi-tenant/utilities`) so a tenant user can't edit another
+tenant's documents via the API.
+
+## Login
+
+- Everyone logs in at `/admin` with email + password (Payload auth on `users`).
+- Super-admins see every tenant; regular users see only assigned tenants via the
+  selector. There is no separate per-tenant login URL in this setup.
+
 ## Frontend architecture
 
 Payload 3 installs **directly into a Next.js app**. Two patterns:
