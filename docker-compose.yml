@@ -2,7 +2,8 @@
 #
 # Nothing is hardcoded. Coolify auto-generates every secret from the
 # SERVICE_* magic variables and exposes them as editable env vars:
-#   SERVICE_FQDN_PAYLOAD_3000   -> public domain, routed to container port 3000
+#   SERVICE_FQDN_PAYLOAD_3000   -> generates a domain and routes it to container port 3000
+#   SERVICE_URL_PAYLOAD         -> full public URL with scheme (e.g. https://payload.tzhk.dev)
 #   SERVICE_BASE64_64_PAYLOADSECRET -> 64-char Payload secret
 #   SERVICE_USER_POSTGRES       -> generated DB user
 #   SERVICE_PASSWORD_POSTGRES   -> generated DB password
@@ -13,9 +14,12 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      # Public URL (Coolify fills SERVICE_FQDN_PAYLOAD_3000 with https://<domain>).
+      # Declared so Coolify sets up proxy routing to container port 3000.
       - SERVICE_FQDN_PAYLOAD_3000
-      - PAYLOAD_PUBLIC_SERVER_URL=${SERVICE_FQDN_PAYLOAD_3000:-http://localhost:3000}
+      # Public URL of the CMS. Must be a full URL *with scheme* — SERVICE_URL_*
+      # gives https://<domain>, unlike SERVICE_FQDN_* which is the bare host.
+      # Prefer the clean custom domain, fall back to the auto-generated one.
+      - PAYLOAD_PUBLIC_SERVER_URL=${SERVICE_URL_PAYLOAD:-${SERVICE_URL_PAYLOAD_3000:-http://localhost:3000}}
       # Override to allow your site's domains to call the API, comma-separated.
       - CORS_ORIGINS=${CORS_ORIGINS:-}
       # Secret used to sign tokens.
