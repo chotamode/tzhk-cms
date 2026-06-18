@@ -16,12 +16,13 @@ services:
     environment:
       # Declared so Coolify sets up proxy routing to container port 3000.
       - SERVICE_FQDN_PAYLOAD_3000
-      # Public URL of the CMS. Use ONLY the clean SERVICE_URL_PAYLOAD
-      # (https://payload.tzhk.dev). We deliberately do NOT fall back to the
-      # *_3000 variants — Coolify appends ":3000" to those, which is a broken
-      # public URL (browsers would hit port 3000 over TLS). If unset, leave it
-      # empty so Payload derives the URL from the incoming request instead.
-      - PAYLOAD_PUBLIC_SERVER_URL=${SERVICE_URL_PAYLOAD:-}
+      # Public URL of the CMS. Priority:
+      #   1. A PAYLOAD_PUBLIC_SERVER_URL you add yourself in Coolify (a normal,
+      #      editable env var) — set this to point the CMS at any domain.
+      #   2. SERVICE_URL_PAYLOAD — the clean URL Coolify derives from the domain
+      #      you set in the service's "Domains" field (auto-updates on change).
+      #   3. Empty -> Payload derives the URL from the incoming request.
+      - PAYLOAD_PUBLIC_SERVER_URL=${PAYLOAD_PUBLIC_SERVER_URL:-${SERVICE_URL_PAYLOAD:-}}
       # Override to allow your site's domains to call the API, comma-separated.
       - CORS_ORIGINS=${CORS_ORIGINS:-}
       # Secret used to sign tokens.

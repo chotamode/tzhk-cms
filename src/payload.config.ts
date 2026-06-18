@@ -10,6 +10,7 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Tenants } from './collections/Tenants'
 import { Portfolio } from './collections/Portfolio'
+import { migrations } from './migrations'
 import type { User } from './payload-types'
 
 const filename = fileURLToPath(import.meta.url)
@@ -46,11 +47,14 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
-    // Auto-sync the schema to the database on boot. Payload disables this by
-    // default in production (NODE_ENV=production) and expects migrations, but
-    // we ship no migration files yet — without push the tables are never
-    // created and /admin fails with a DB error. Keep it on for now; set
-    // PAYLOAD_DB_PUSH=false once a proper migration workflow is in place.
+    // Run pending migrations automatically on boot in production. This is the
+    // reliable way to create/upgrade the schema in the standalone Docker build:
+    // `push` (dev schema sync) does NOT run in the production server, so without
+    // this the tables are never created and /admin fails with "relation does
+    // not exist". Generate new migrations with `pnpm payload migrate:create`.
+    prodMigrations: migrations,
+    // `push` only applies in dev (NODE_ENV !== production). Toggle off if you
+    // prefer running `pnpm payload migrate` manually during local development.
     push: process.env.PAYLOAD_DB_PUSH !== 'false',
   }),
   sharp,
