@@ -89,16 +89,18 @@ Access rules we enforce (verified with the Local API):
   > Verified: without this, a regular tenant user can promote themselves to
   > super-admin via `PATCH /api/users/:id`. With it, the field update is denied.
 - **`portfolio` / `media`**: `read: () => true` so the decoupled frontend can
-  read them publicly. Verified that public (no-user) reads still return tenant
-  content. Writes go through the admin (authenticated).
+  read them publicly (verified: public no-user reads still return tenant
+  content). `create` uses `createTenantDocument` so a tenant user can only
+  create within a tenant they belong to. `read`(scoping)/`update`/`delete` are
+  already tenant-scoped by the plugin's `where` filter.
+  > Verified: the plugin scopes update/delete by tenant, **but not create** — a
+  > tenant-A user could create a doc assigned to tenant B until we added
+  > `createTenantDocument` (uses `getUserTenantIDs` from
+  > `@payloadcms/plugin-multi-tenant/utilities`). After the fix: cross-tenant
+  > create is blocked, own-tenant create works.
 - First user: create access returns false for anonymous requests, but Payload's
   **"create first user"** admin screen bypasses access — bootstrap there, and
   tick `isSuperAdmin` on that first account.
-
-When adding more client-users later, consider tenant-scoped write access on
-content collections (the plugin's `getTenantAccess` /
-`@payloadcms/plugin-multi-tenant/utilities`) so a tenant user can't edit another
-tenant's documents via the API.
 
 ## Login
 
