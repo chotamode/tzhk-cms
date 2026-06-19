@@ -60,10 +60,13 @@ Official workflow (https://payloadcms.com/docs/database/migrations):
   `SERVICE_URL_PAYLOAD` → public URL. The `*_3000` variants carry a `:3000`
   suffix; the domain is changed in the service's **Domains** field, not by
   editing the (locked) magic env vars.
-- Object storage: for production uploads, the guides recommend a cloud storage
-  adapter (S3/R2/etc.) instead of the local filesystem. Not set up yet — worth
-  doing before the client uploads real media, since container storage is
-  ephemeral.
+- Object storage: configured via `@payloadcms/storage-s3` (works with
+  Cloudflare R2). Enabled when `S3_BUCKET` is set; otherwise falls back to local
+  disk for dev. Uploads survive redeploys. `media` also generates optimized
+  webp sizes (thumbnail/card/full) via sharp to keep storage small.
+- Email: `@payloadcms/email-nodemailer`, enabled when `SMTP_HOST` is set (any
+  SMTP server). Without it, emails are logged to the console. Needed for
+  password resets / invites. Verify the sending domain (SPF/DKIM) for delivery.
 
 ## Multi-tenancy & access control
 
