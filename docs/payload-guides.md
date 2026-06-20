@@ -67,6 +67,8 @@ Official workflow (https://payloadcms.com/docs/database/migrations):
 - Email: `@payloadcms/email-nodemailer`, enabled when `SMTP_HOST` is set (any
   SMTP server). Without it, emails are logged to the console. Needed for
   password resets / invites. Verify the sending domain (SPF/DKIM) for delivery.
+  We self-host mail with Mailcow on a dedicated VPS — see
+  [`mailcow-setup.md`](./mailcow-setup.md) for the full server + DNS setup.
 
 ## Multi-tenancy & access control
 
