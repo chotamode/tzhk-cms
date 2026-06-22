@@ -60,10 +60,58 @@ Official workflow (https://payloadcms.com/docs/database/migrations):
   `SERVICE_URL_PAYLOAD` → public URL. The `*_3000` variants carry a `:3000`
   suffix; the domain is changed in the service's **Domains** field, not by
   editing the (locked) magic env vars.
-- Object storage: for production uploads, the guides recommend a cloud storage
-  adapter (S3/R2/etc.) instead of the local filesystem. Not set up yet — worth
-  doing before the client uploads real media, since container storage is
-  ephemeral.
+- Object storage: configured via `@payloadcms/storage-s3` (works with
+  Cloudflare R2). Enabled when `S3_BUCKET` is set; otherwise falls back to local
+  disk for dev. Uploads survive redeploys. `media` also generates optimized
+  webp sizes (thumbnail/card/full) via sharp to keep storage small.
+- Email: `@payloadcms/email-nodemailer`, enabled when `SMTP_HOST` is set (any
+  SMTP server). Without it, emails are logged to the console. Needed for
+  password resets / invites. Verify the sending domain (SPF/DKIM) for delivery.
+  We self-host mail with Mailcow on a dedicated VPS — see
+  [`mailcow-setup.md`](./mailcow-setup.md) for the full server + DNS setup.
+
+## Multi-tenancy & access control
+
+Plugin: `@payloadcms/plugin-multi-tenant`. Reference: the official example at
+https://github.com/payloadcms/payload/tree/main/examples/multi-tenant and
+https://payloadcms.com/docs/plugins/multi-tenant.
+
+What the plugin does for us (config in `payload.config.ts`):
+- Adds a `tenant` relationship field to `portfolio` and `media`.
+- Adds a `tenants` array field to `users` (auto, `includeDefaultField` default).
+- Shows a tenant selector in the admin and filters list views by tenant.
+- `userHasAccessToAllTenants: (u) => u.isSuperAdmin` lets super-admins see all.
+
+How our model maps to the example: the official example uses a `roles`
+select (`super-admin`/`user` + tenant roles `tenant-admin`/`tenant-viewer`). We
+use a simpler boolean `isSuperAdmin`. That is fine — but the example's
+**access control is not optional**, and the starter we began from shipped none.
+
+Access rules we enforce (verified with the Local API):
+- **`users` collection** (`src/collections/Users.ts`): `create`/`delete` =
+  super-admins only; `read`/`update` = self or super-admin.
+- **`isSuperAdmin` field**: `update` allowed for super-admins only.
+  > Verified: without this, a regular tenant user can promote themselves to
+  > super-admin via `PATCH /api/users/:id`. With it, the field update is denied.
+- **`portfolio` / `media`**: `read: () => true` so the decoupled frontend can
+  read them publicly (verified: public no-user reads still return tenant
+  content). `create` uses `createTenantDocument` so a tenant user can only
+  create within a tenant they belong to. `read`(scoping)/`update`/`delete` are
+  already tenant-scoped by the plugin's `where` filter.
+  > Verified: the plugin scopes update/delete by tenant, **but not create** — a
+  > tenant-A user could create a doc assigned to tenant B until we added
+  > `createTenantDocument` (uses `getUserTenantIDs` from
+  > `@payloadcms/plugin-multi-tenant/utilities`). After the fix: cross-tenant
+  > create is blocked, own-tenant create works.
+- First user: create access returns false for anonymous requests, but Payload's
+  **"create first user"** admin screen bypasses access — bootstrap there, and
+  tick `isSuperAdmin` on that first account.
+
+## Login
+
+- Everyone logs in at `/admin` with email + password (Payload auth on `users`).
+- Super-admins see every tenant; regular users see only assigned tenants via the
+  selector. There is no separate per-tenant login URL in this setup.
 
 ## Frontend architecture
 

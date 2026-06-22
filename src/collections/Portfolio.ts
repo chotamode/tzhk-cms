@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { createTenantDocument } from '../access/createTenantDocument'
+
 /**
  * Example tenant-scoped content collection. The multi-tenant plugin adds a
  * `tenant` relationship field automatically (see payload.config.ts), so every
@@ -12,7 +14,11 @@ export const Portfolio: CollectionConfig = {
     defaultColumns: ['label', 'category', 'tenant'],
   },
   access: {
+    // Public read so the (decoupled) frontend can fetch content.
     read: () => true,
+    // Tenant users can only create within their own tenant; read/update/delete
+    // are already tenant-scoped by the multi-tenant plugin.
+    create: createTenantDocument,
   },
   fields: [
     {

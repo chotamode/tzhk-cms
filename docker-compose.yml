@@ -29,6 +29,22 @@ services:
       - PAYLOAD_SECRET=${SERVICE_BASE64_64_PAYLOADSECRET:-change-me-locally}
       # Database connection, assembled from the generated Postgres creds.
       - DATABASE_URI=postgres://${SERVICE_USER_POSTGRES:-postgres}:${SERVICE_PASSWORD_POSTGRES:-postgres}@postgres:5432/${POSTGRES_DB:-payload}
+      # Object storage for uploads (Cloudflare R2 / any S3-compatible). When
+      # S3_BUCKET is empty the app falls back to local disk (dev only).
+      - S3_BUCKET=${S3_BUCKET:-}
+      - S3_ENDPOINT=${S3_ENDPOINT:-}
+      - S3_REGION=${S3_REGION:-auto}
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID:-}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY:-}
+      # SMTP email (password resets, invites). When SMTP_HOST is empty, email is
+      # logged to the console instead of sent.
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_SECURE=${SMTP_SECURE:-}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - EMAIL_FROM=${EMAIL_FROM:-}
+      - EMAIL_FROM_NAME=${EMAIL_FROM_NAME:-}
     depends_on:
       postgres:
         condition: service_healthy
