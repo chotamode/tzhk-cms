@@ -22,6 +22,21 @@ the server that `SMTP_HOST` points at.
 > with web apps also means a Coolify rebuild/outage takes down every client's
 > mail. Keep mail isolated on its own box.
 
+> **If you attach the mail VPS to Coolify** (handy for the built-in terminal /
+> monitoring / updates), you **must disable Coolify's proxy on that server** —
+> otherwise Coolify starts a `coolify-proxy` (Traefik) that grabs 80/443 and
+> Mailcow can't bind them. In Coolify: **Servers → [mail server] → Proxy →
+> set to None/Disabled**. Then confirm 80/443 are free on the box:
+> ```bash
+> docker ps | grep -i proxy           # should show nothing
+> ss -ltnp | grep -E ':80|:443'       # should be empty before Mailcow starts
+> # if a leftover proxy is running:
+> docker stop coolify-proxy && docker rm coolify-proxy
+> ```
+> Never deploy a web resource to this server from Coolify — it would re-pull
+> Traefik onto 80/443. Mailcow stays a **manual `docker compose` stack**, not a
+> Coolify resource.
+
 ## Architecture
 
 ```
@@ -49,6 +64,20 @@ the server that `SMTP_HOST` points at.
    ```bash
    hostnamectl set-hostname mail.tzhk.dev
    ```
+5. **IPv6-only is not enough for mail.** Lots of receivers/senders are still
+   IPv4-only, so an IPv6-only box delivers/receives only half the internet's
+   mail. Add an IPv4 (Hetzner → server → Networking → Add IPv4, ~€0.50/mo) and
+   set PTR on **both** IPs.
+6. **Add swap** if the box has ≤4 GB RAM (Mailcow is memory-hungry, and these
+   instances ship with none):
+   ```bash
+   fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+   echo '/swapfile none swap sw 0 0' >> /etc/fstab
+   ```
+
+> Our live box (recorded for reference): Hetzner CX-class, Ubuntu, 4 GB RAM +
+> 2 GB swap, IPv4 `91.99.163.104`, IPv6 `2a01:4f8:1c18:24b7::1`, hostname
+> `mail.tzhk.dev`. ClamAV + Solr disabled to fit (see step 3 of install).
 
 ## 2. DNS records (set on `tzhk.dev`)
 
