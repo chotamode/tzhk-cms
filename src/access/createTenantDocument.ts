@@ -25,7 +25,14 @@ export const createTenantDocument: Access = ({ data, req }) => {
   const requested = data?.tenant
   const requestedID =
     requested && typeof requested === 'object' ? (requested as { id: unknown }).id : requested
-  if (requestedID == null) return false
+
+  // No tenant in the payload yet. This is the access check Payload runs to gate
+  // the admin "create" view (called without `data`) — and for `isGlobal`
+  // tenant collections that view is reached directly, so returning false here
+  // locks tenant users out entirely. Allow it for users who belong to a tenant;
+  // the real create is re-checked below with the submitted `data`, so assigning
+  // to a foreign tenant is still rejected at write time.
+  if (requestedID == null) return true
 
   return allowedTenantIDs.map(String).includes(String(requestedID))
 }
