@@ -20,8 +20,9 @@ pnpm seed:content --dir ./content/tatushka
 What it does, idempotently (safe to re-run):
 - creates the tenant (by `slug`) if missing,
 - uploads each referenced image to **Media** → R2 (skips ones already uploaded, matched by filename),
-- writes the single **Site content** doc for the tenant (en/cs/ru),
-- creates/updates **Portfolio** items (matched by English label).
+- writes the single **Site content** doc for the tenant (en/cs/ru), including the
+  **portfolio** gallery as an array on that document (display order = array
+  order; rows matched by English label on re-run, so labels update in place).
 
 See `src/scripts/seedContent.ts` for the exact `content.json` schema. `content/tatushka/` carries the live Tatushkiii content: the real per-locale texts plus the actual site images under `images/`, so the seed reproduces the current site 1:1.
 

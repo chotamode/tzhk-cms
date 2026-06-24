@@ -79,6 +79,23 @@ export const SiteContent: CollectionConfig = {
       ],
     },
     {
+      name: 'portfolio',
+      type: 'array',
+      labels: { singular: 'Work', plural: 'Portfolio' },
+      admin: {
+        description: 'Gallery of works shown on the site, ordered by drag handle.',
+      },
+      fields: [
+        { name: 'label', type: 'text', localized: true, required: true },
+        { name: 'image', type: 'upload', relationTo: 'media', required: true },
+        {
+          name: 'category',
+          type: 'select',
+          options: ['ornamental', 'lineWork', 'abstract', 'whipShading', 'freehand'],
+        },
+      ],
+    },
+    {
       type: 'group',
       name: 'seo',
       fields: [

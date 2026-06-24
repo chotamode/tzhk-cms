@@ -29,8 +29,10 @@ import { getPayload } from 'payload'
  *     "socials":  [ { "platform": "instagram", "url": "" } ],
  *     "seo":    { "metaTitle": {...}, "metaDescription": {...}, "ogImage": "og.jpg" }
  *   },
+ *   // Portfolio is authored at the top level for convenience but folded into the
+ *   // single siteContent document as an array (display order = array order).
  *   "portfolio": [
- *     { "image": "spine.webp", "label": {...}, "category": "ornamental", "sort": 1 }
+ *     { "image": "spine.webp", "label": {...}, "category": "ornamental" }
  *   ]
  * }
  */
@@ -50,10 +52,13 @@ const L = (value: Localized | undefined, locale: Locale): string =>
   value?.[locale] ?? value?.en ?? ''
 
 // Extract a relationship id whether it's a raw id or a populated object.
-const extractId = (v: unknown): string | undefined => {
+// Postgres ids are numeric and the upload field rejects a stringified ("2")
+// id, so return a number (not String()).
+const extractId = (v: unknown): number | undefined => {
   if (v == null) return undefined
-  if (typeof v === 'object') return String((v as { id: unknown }).id)
-  return String(v)
+  const raw = typeof v === 'object' ? (v as { id: string | number }).id : v
+  const n = Number(raw)
+  return Number.isNaN(n) ? undefined : n
 }
 
 // Minimal plain-text → Lexical rich-text (paragraphs split on blank lines).
@@ -62,14 +67,14 @@ const textToLexical = (text: string) => {
   const children = (paragraphs.length ? paragraphs : ['']).map((p) => ({
     type: 'paragraph',
     version: 1,
-    format: '',
+    format: '' as const,
     indent: 0,
-    direction: 'ltr',
+    direction: 'ltr' as const,
     children: [
       { type: 'text', text: p, version: 1, format: 0, style: '', mode: 'normal', detail: 0 },
     ],
   }))
-  return { root: { type: 'root', format: '', indent: 0, version: 1, direction: 'ltr', children } }
+  return { root: { type: 'root', format: '' as const, indent: 0, version: 1, direction: 'ltr' as const, children } }
 }
 
 const run = async (): Promise<void> => {
@@ -113,9 +118,9 @@ const run = async (): Promise<void> => {
     throw new Error(`Image not found: ${name} (looked in ${root} and ${root}/images)`)
   }
 
-  const mediaCache = new Map<string, string>()
-  const uploadImage = async (name: string, alt: string): Promise<string> => {
-    if (mediaCache.has(name)) return mediaCache.get(name) as string
+  const mediaCache = new Map<string, number>()
+  const uploadImage = async (name: string, alt: string): Promise<number> => {
+    if (mediaCache.has(name)) return mediaCache.get(name) as number
     // Payload renames on filename collisions and re-encodes to webp, so the
     // stored filename is not a reliable dedup key. Cross-run idempotency is
     // handled by reusing the image already attached to an existing doc (below);
@@ -126,13 +131,13 @@ const run = async (): Promise<void> => {
       filePath: resolveImage(name),
       overrideAccess: true,
     })
-    const id = created.id as string
+    const id = Number(created.id)
     payload.logger.info(`Uploaded media ${name} → ${id}`)
     mediaCache.set(name, id)
     return id
   }
 
-  // --- Site content (one per tenant) ---
+  // --- Site content + portfolio (one document per tenant) ---
   if (content.siteContent) {
     const sc = content.siteContent
     const found = await payload.find({
@@ -143,7 +148,13 @@ const run = async (): Promise<void> => {
       overrideAccess: true,
       depth: 0,
     })
-    const existing = found.docs[0] as { id: string | number; seo?: { ogImage?: unknown } } | undefined
+    const existing = found.docs[0] as
+      | {
+          id: string | number
+          seo?: { ogImage?: unknown }
+          portfolio?: Array<{ id?: string; label?: string; image?: unknown }>
+        }
+      | undefined
 
     // Reuse the OG image already attached on re-run; upload only when new.
     const ogImageId = existing
@@ -152,7 +163,20 @@ const run = async (): Promise<void> => {
         ? await uploadImage(sc.seo.ogImage, 'OG image')
         : undefined
 
-    const build = (loc: Locale) => ({
+    // Portfolio rows: upload each image once, reusing the one already attached
+    // to a matching row on re-run (matched by English label).
+    type Category = 'ornamental' | 'lineWork' | 'abstract' | 'whipShading' | 'freehand'
+    const portfolioRows: Array<{ label: Localized; image: number; category: Category | null }> = []
+    for (const item of content.portfolio ?? []) {
+      const labelEn = L(item.label, 'en')
+      const prior = existing?.portfolio?.find((p) => p.label === labelEn)
+      const imageId = (prior ? extractId(prior.image) : undefined) ?? (await uploadImage(item.image, labelEn))
+      portfolioRows.push({ label: item.label, image: imageId, category: (item.category ?? null) as Category | null })
+    }
+
+    // `rowIds[i]` reuses an existing array-row id so localized labels update in
+    // place across locales/re-runs instead of duplicating rows; undefined ⇒ new.
+    const build = (loc: Locale, rowIds: Array<string | undefined>) => ({
       internalTitle: 'Homepage',
       tenant: tenantId,
       hero: { title: L(sc.hero?.title, loc), subtitle: L(sc.hero?.subtitle, loc) },
@@ -160,6 +184,12 @@ const run = async (): Promise<void> => {
       cta: { label: L(sc.cta?.label, loc) },
       contacts: sc.contacts ?? {},
       socials: sc.socials ?? [],
+      portfolio: portfolioRows.map((row, i) => ({
+        ...(rowIds[i] ? { id: rowIds[i] } : {}),
+        label: L(row.label, loc),
+        image: row.image,
+        category: row.category,
+      })),
       seo: {
         metaTitle: L(sc.seo?.metaTitle, loc),
         metaDescription: L(sc.seo?.metaDescription, loc),
@@ -167,60 +197,35 @@ const run = async (): Promise<void> => {
       },
     })
 
+    const existingRowIds = existing?.portfolio?.map((p) => p.id) ?? []
+
     let id = existing?.id
     if (!id) {
       const created = await payload.create({
         collection: 'siteContent',
-        data: build('en'),
+        data: build('en', existingRowIds),
         locale: 'en',
         overrideAccess: true,
       })
       id = created.id
     } else {
-      await payload.update({ collection: 'siteContent', id, data: build('en'), locale: 'en', overrideAccess: true })
+      await payload.update({ collection: 'siteContent', id, data: build('en', existingRowIds), locale: 'en', overrideAccess: true })
     }
-    for (const loc of ['cs', 'ru'] as Locale[]) {
-      await payload.update({ collection: 'siteContent', id, data: build(loc), locale: loc, overrideAccess: true })
-    }
-    payload.logger.info('Site content seeded (en/cs/ru).')
-  }
 
-  // --- Portfolio items (by English label within the tenant) ---
-  for (const item of content.portfolio ?? []) {
-    const labelEn = L(item.label, 'en')
-    const found = await payload.find({
-      collection: 'portfolio',
-      where: { and: [{ tenant: { equals: tenantId } }, { label: { equals: labelEn } }] },
-      limit: 1,
+    // Re-read to capture the array-row ids Payload assigned on create, then
+    // write the cs/ru labels against those same rows (localized array fields).
+    const afterEn = (await payload.findByID({
+      collection: 'siteContent',
+      id,
       locale: 'en',
-      overrideAccess: true,
       depth: 0,
-    })
-    const existing = found.docs[0] as { id: string | number; image?: unknown } | undefined
-
-    // Reuse the existing item's image on re-run; upload only when creating.
-    const imageId =
-      (existing ? extractId(existing.image) : undefined) ?? (await uploadImage(item.image, labelEn))
-
-    const build = (loc: Locale) => ({
-      tenant: tenantId,
-      image: imageId,
-      category: item.category ?? null,
-      sort: item.sort ?? 0,
-      label: L(item.label, loc),
-    })
-
-    let id = existing?.id
-    if (!id) {
-      const created = await payload.create({ collection: 'portfolio', data: build('en'), locale: 'en', overrideAccess: true })
-      id = created.id
-    } else {
-      await payload.update({ collection: 'portfolio', id, data: build('en'), locale: 'en', overrideAccess: true })
-    }
+      overrideAccess: true,
+    })) as { portfolio?: Array<{ id?: string }> }
+    const rowIds = (afterEn.portfolio ?? []).map((p) => p.id)
     for (const loc of ['cs', 'ru'] as Locale[]) {
-      await payload.update({ collection: 'portfolio', id, data: build(loc), locale: loc, overrideAccess: true })
+      await payload.update({ collection: 'siteContent', id, data: build(loc, rowIds), locale: loc, overrideAccess: true })
     }
-    payload.logger.info(`Portfolio item "${labelEn}" seeded.`)
+    payload.logger.info(`Site content + ${portfolioRows.length} portfolio item(s) seeded (en/cs/ru).`)
   }
 
   payload.logger.info('Done.')
