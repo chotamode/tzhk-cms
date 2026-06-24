@@ -12,7 +12,6 @@ import sharp from 'sharp'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Tenants } from './collections/Tenants'
-import { Portfolio } from './collections/Portfolio'
 import { SiteContent } from './collections/SiteContent'
 import { migrations } from './migrations'
 import type { User } from './payload-types'
@@ -88,7 +87,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Tenants, Portfolio, SiteContent, Media],
+  collections: [Users, Tenants, SiteContent, Media],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -118,9 +117,9 @@ export default buildConfig({
     multiTenantPlugin<User>({
       // Collections whose documents belong to a single tenant.
       collections: {
-        portfolio: {},
         media: {},
-        // One editable document per tenant (the landing-page content/texts/SEO).
+        // One editable document per tenant (landing-page content/texts/SEO +
+        // the portfolio gallery, kept as an array on this single document).
         siteContent: { isGlobal: true },
       },
       // Super-admins can switch between and manage every tenant.

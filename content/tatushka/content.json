@@ -1,0 +1,96 @@
+{
+  "tenant": {
+    "name": "Tatushkiii",
+    "slug": "tatushka"
+  },
+  "siteContent": {
+    "hero": {
+      "title": {
+        "en": "TATTOOS",
+        "cs": "TETOVÁNÍ",
+        "ru": "ТАТУ"
+      },
+      "subtitle": {
+        "en": "Custom designs. Raw aesthetics. Precise. Sterile. Ethereal.",
+        "cs": "Vlastní návrhy. Surová estetika. Přesné. Sterilní. Éterické.",
+        "ru": "Кастомные эскизы. Сырая эстетика. Точно. Стерильно. Эфирно."
+      }
+    },
+    "about": {
+      "heading": {
+        "en": "HI! I'M SANDU",
+        "cs": "AHOJ! JSEM SANDU",
+        "ru": "ПРИВЕТ! Я САНДУ"
+      },
+      "body": {
+        "en": "I'm a tattoo artist with 4 years of experience and a huge love for tattooing.\n\nI specialize in linework, ornamental designs, and black & red tones. But I'm a flexible artist, so don't worry, we'll make something stylish that suits you.",
+        "cs": "Jsem tetovací umělkyně se 4 lety zkušeností a obrovskou láskou k tetování.\n\nSpecializuji se na linky, ornamentální vzory a černočervené tóny. Jsem ale flexibilní umělkyně, takže se neboj, vytvoříme něco stylovýho, co ti bude sedět.",
+        "ru": "Я тату-мастер с 4-летним опытом и огромной любовью к татуировкам.\n\nЯ специализируюсь на лайнворке, орнаментальных дизайнах и черно-красных тонах. Но я гибкая художница, так что не волнуйся, мы сделаем что-то стильное, что тебе подойдет."
+      }
+    },
+    "cta": {
+      "label": {
+        "en": "Book Session",
+        "cs": "Rezervovat termín",
+        "ru": "Записаться на сеанс"
+      }
+    },
+    "contacts": {
+      "telegram": "@doompink",
+      "whatsapp": "+420774685187",
+      "email": "doompynooo@gmail.com"
+    },
+    "socials": [
+      {
+        "platform": "instagram",
+        "url": "https://www.instagram.com/doompink"
+      },
+      {
+        "platform": "telegram",
+        "url": "https://t.me/doompink"
+      }
+    ],
+    "seo": {
+      "metaTitle": {
+        "en": "SANDU | Tattoo Artist Prague - Ornamental & Abstract Tattoos",
+        "cs": "SANDU | Tatérka Praha – Ornamentální & abstraktní tetování",
+        "ru": "SANDU | Тату-мастер Прага — орнаментальные и абстрактные тату"
+      },
+      "metaDescription": {
+        "en": "Custom tattoo designs in Prague. Specializing in ornamental, linework, abstract and cybersigilism styles. 4 years experience. Book your session now.",
+        "cs": "Zakázkové návrhy tetování v Praze. Specializace na ornamentální, linkové, abstraktní a kybersigilistické styly. 4 roky zkušeností. Rezervuj si termín.",
+        "ru": "Кастомные тату-эскизы в Праге. Специализация: орнаментал, лайнворк, абстракция и киберсигилизм. 4 года опыта. Запишись на сеанс."
+      },
+      "ogImage": "og.jpg"
+    }
+  },
+  "portfolio": [
+    {
+      "image": "spine.webp",
+      "label": {
+        "en": "Spine",
+        "cs": "Páteř",
+        "ru": "Спина"
+      },
+      "category": "ornamental"
+    },
+    {
+      "image": "arm.webp",
+      "label": {
+        "en": "Arm",
+        "cs": "Ruka",
+        "ru": "Рука"
+      },
+      "category": "lineWork"
+    },
+    {
+      "image": "back.webp",
+      "label": {
+        "en": "Back",
+        "cs": "Záda",
+        "ru": "Спина"
+      },
+      "category": "abstract"
+    }
+  ]
+}

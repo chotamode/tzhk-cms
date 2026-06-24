@@ -69,7 +69,6 @@ export interface Config {
   collections: {
     users: User;
     tenants: Tenant;
-    portfolio: Portfolio;
     siteContent: SiteContent;
     media: Media;
     'payload-kv': PayloadKv;
@@ -81,7 +80,6 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     tenants: TenantsSelect<false> | TenantsSelect<true>;
-    portfolio: PortfolioSelect<false> | PortfolioSelect<true>;
     siteContent: SiteContentSelect<false> | SiteContentSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -178,17 +176,71 @@ export interface Tenant {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "portfolio".
+ * via the `definition` "siteContent".
  */
-export interface Portfolio {
+export interface SiteContent {
   id: number;
   tenant?: (number | null) | Tenant;
-  label: string;
-  image: number | Media;
-  category?: ('ornamental' | 'lineWork' | 'abstract' | 'whipShading' | 'freehand') | null;
-  sort?: number | null;
+  /**
+   * Internal label only (not shown on the site).
+   */
+  internalTitle?: string | null;
+  hero?: {
+    title?: string | null;
+    subtitle?: string | null;
+  };
+  about?: {
+    heading?: string | null;
+    body?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  cta?: {
+    label?: string | null;
+  };
+  contacts?: {
+    telegram?: string | null;
+    whatsapp?: string | null;
+    email?: string | null;
+  };
+  socials?:
+    | {
+        platform: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Gallery of works shown on the site, ordered by drag handle.
+   */
+  portfolio?:
+    | {
+        label: string;
+        image: number | Media;
+        category?: ('ornamental' | 'lineWork' | 'abstract' | 'whipShading' | 'freehand') | null;
+        id?: string | null;
+      }[]
+    | null;
+  seo?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    ogImage?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -238,63 +290,6 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "siteContent".
- */
-export interface SiteContent {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  /**
-   * Internal label only (not shown on the site).
-   */
-  internalTitle?: string | null;
-  hero?: {
-    title?: string | null;
-    subtitle?: string | null;
-  };
-  about?: {
-    heading?: string | null;
-    body?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-  };
-  cta?: {
-    label?: string | null;
-  };
-  contacts?: {
-    telegram?: string | null;
-    whatsapp?: string | null;
-    email?: string | null;
-  };
-  socials?:
-    | {
-        platform: string;
-        url: string;
-        id?: string | null;
-      }[]
-    | null;
-  seo?: {
-    metaTitle?: string | null;
-    metaDescription?: string | null;
-    ogImage?: (number | null) | Media;
-  };
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -324,10 +319,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'tenants';
         value: number | Tenant;
-      } | null)
-    | ({
-        relationTo: 'portfolio';
-        value: number | Portfolio;
       } | null)
     | ({
         relationTo: 'siteContent';
@@ -421,19 +412,6 @@ export interface TenantsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "portfolio_select".
- */
-export interface PortfolioSelect<T extends boolean = true> {
-  tenant?: T;
-  label?: T;
-  image?: T;
-  category?: T;
-  sort?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "siteContent_select".
  */
 export interface SiteContentSelect<T extends boolean = true> {
@@ -468,6 +446,14 @@ export interface SiteContentSelect<T extends boolean = true> {
     | {
         platform?: T;
         url?: T;
+        id?: T;
+      };
+  portfolio?:
+    | T
+    | {
+        label?: T;
+        image?: T;
+        category?: T;
         id?: T;
       };
   seo?:
