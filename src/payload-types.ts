@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     tenants: Tenant;
     portfolio: Portfolio;
+    siteContent: SiteContent;
     media: Media;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -81,6 +82,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     tenants: TenantsSelect<false> | TenantsSelect<true>;
     portfolio: PortfolioSelect<false> | PortfolioSelect<true>;
+    siteContent: SiteContentSelect<false> | SiteContentSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -236,6 +238,63 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "siteContent".
+ */
+export interface SiteContent {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  /**
+   * Internal label only (not shown on the site).
+   */
+  internalTitle?: string | null;
+  hero?: {
+    title?: string | null;
+    subtitle?: string | null;
+  };
+  about?: {
+    heading?: string | null;
+    body?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  cta?: {
+    label?: string | null;
+  };
+  contacts?: {
+    telegram?: string | null;
+    whatsapp?: string | null;
+    email?: string | null;
+  };
+  socials?:
+    | {
+        platform: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  seo?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    ogImage?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -269,6 +328,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'portfolio';
         value: number | Portfolio;
+      } | null)
+    | ({
+        relationTo: 'siteContent';
+        value: number | SiteContent;
       } | null)
     | ({
         relationTo: 'media';
@@ -368,6 +431,55 @@ export interface PortfolioSelect<T extends boolean = true> {
   sort?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "siteContent_select".
+ */
+export interface SiteContentSelect<T extends boolean = true> {
+  tenant?: T;
+  internalTitle?: T;
+  hero?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+      };
+  about?:
+    | T
+    | {
+        heading?: T;
+        body?: T;
+      };
+  cta?:
+    | T
+    | {
+        label?: T;
+      };
+  contacts?:
+    | T
+    | {
+        telegram?: T;
+        whatsapp?: T;
+        email?: T;
+      };
+  socials?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        ogImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

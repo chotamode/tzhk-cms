@@ -13,6 +13,7 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Tenants } from './collections/Tenants'
 import { Portfolio } from './collections/Portfolio'
+import { SiteContent } from './collections/SiteContent'
 import { migrations } from './migrations'
 import type { User } from './payload-types'
 
@@ -87,7 +88,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Tenants, Portfolio, Media],
+  collections: [Users, Tenants, Portfolio, SiteContent, Media],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -119,6 +120,8 @@ export default buildConfig({
       collections: {
         portfolio: {},
         media: {},
+        // One editable document per tenant (the landing-page content/texts/SEO).
+        siteContent: { isGlobal: true },
       },
       // Super-admins can switch between and manage every tenant.
       userHasAccessToAllTenants: (user) => Boolean(user?.isSuperAdmin),
