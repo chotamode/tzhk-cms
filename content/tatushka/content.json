@@ -2,23 +2,23 @@
   "tenant": { "name": "Tatushkiii", "slug": "tatushka" },
   "siteContent": {
     "hero": {
-      "title": { "en": "SANDU", "cs": "SANDU", "ru": "SANDU" },
+      "title": { "en": "TATTOOS", "cs": "TETOVÁNÍ", "ru": "ТАТУ" },
       "subtitle": {
-        "en": "Cybersigilism & abstract tattoo — Prague",
-        "cs": "Kybersigilismus & abstraktní tetování — Praha",
-        "ru": "Киберсигилизм и абстрактные тату — Прага"
+        "en": "Custom designs. Raw aesthetics. Precise. Sterile. Ethereal.",
+        "cs": "Vlastní návrhy. Surová estetika. Přesné. Sterilní. Éterické.",
+        "ru": "Кастомные эскизы. Сырая эстетика. Точно. Стерильно. Эфирно."
       }
     },
     "about": {
-      "heading": { "en": "About", "cs": "O mně", "ru": "Обо мне" },
+      "heading": { "en": "HI! I'M SANDU", "cs": "AHOJ! JSEM SANDU", "ru": "ПРИВЕТ! Я САНДУ" },
       "body": {
-        "en": "First paragraph about the artist.\n\nSecond paragraph.",
-        "cs": "První odstavec o umělci.\n\nDruhý odstavec.",
-        "ru": "Первый абзац о мастере.\n\nВторой абзац."
+        "en": "I'm a tattoo artist with 4 years of experience and a huge love for tattooing.\n\nI specialize in linework, ornamental designs, and black & red tones. But I'm a flexible artist, so don't worry, we'll make something stylish that suits you.",
+        "cs": "Jsem tetovací umělkyně se 4 lety zkušeností a obrovskou láskou k tetování.\n\nSpecializuji se na linky, ornamentální vzory a černočervené tóny. Jsem ale flexibilní umělkyně, takže se neboj, vytvoříme něco stylovýho, co ti bude sedět.",
+        "ru": "Я тату-мастер с 4-летним опытом и огромной любовью к татуировкам.\n\nЯ специализируюсь на лайнворке, орнаментальных дизайнах и черно-красных тонах. Но я гибкая художница, так что не волнуйся, мы сделаем что-то стильное, что тебе подойдет."
       }
     },
     "cta": {
-      "label": { "en": "Book now", "cs": "Rezervovat", "ru": "Записаться" }
+      "label": { "en": "Book Session", "cs": "Rezervovat termín", "ru": "Записаться на сеанс" }
     },
     "contacts": {
       "telegram": "@doompink",
@@ -30,11 +30,15 @@
       { "platform": "telegram", "url": "https://t.me/doompink" }
     ],
     "seo": {
-      "metaTitle": { "en": "SANDU — Tattoo", "cs": "SANDU — Tetování", "ru": "SANDU — Тату" },
+      "metaTitle": {
+        "en": "SANDU | Tattoo Artist Prague - Ornamental & Abstract Tattoos",
+        "cs": "SANDU | Tatérka Praha – Ornamentální & abstraktní tetování",
+        "ru": "SANDU | Тату-мастер Прага — орнаментальные и абстрактные тату"
+      },
       "metaDescription": {
-        "en": "Cybersigilism & abstract tattoo in Prague.",
-        "cs": "Kybersigilismus & abstraktní tetování v Praze.",
-        "ru": "Киберсигилизм и абстрактные тату в Праге."
+        "en": "Custom tattoo designs in Prague. Specializing in ornamental, linework, abstract and cybersigilism styles. 4 years experience. Book your session now.",
+        "cs": "Zakázkové návrhy tetování v Praze. Specializace na ornamentální, linkové, abstraktní a kybersigilistické styly. 4 roky zkušeností. Rezervuj si termín.",
+        "ru": "Кастомные тату-эскизы в Праге. Специализация: орнаментал, лайнворк, абстракция и киберсигилизм. 4 года опыта. Запишись на сеанс."
       },
       "ogImage": "og.jpg"
     }
@@ -42,13 +46,13 @@
   "portfolio": [
     {
       "image": "spine.webp",
-      "label": { "en": "Spine", "cs": "Páteř", "ru": "Позвоночник" },
+      "label": { "en": "Spine", "cs": "Páteř", "ru": "Спина" },
       "category": "ornamental",
       "sort": 1
     },
     {
       "image": "arm.webp",
-      "label": { "en": "Arm", "cs": "Paže", "ru": "Рука" },
+      "label": { "en": "Arm", "cs": "Ruka", "ru": "Рука" },
       "category": "lineWork",
       "sort": 2
     },

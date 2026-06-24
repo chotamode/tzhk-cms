@@ -23,7 +23,9 @@ What it does, idempotently (safe to re-run):
 - writes the single **Site content** doc for the tenant (en/cs/ru),
 - creates/updates **Portfolio** items (matched by English label).
 
-See `src/scripts/seedContent.ts` for the exact `content.json` schema. `content/tatushka/content.json` is a working template — drop real images into `content/tatushka/images/` and edit the texts.
+See `src/scripts/seedContent.ts` for the exact `content.json` schema. `content/tatushka/` carries the live Tatushkiii content: the real per-locale texts plus the actual site images under `images/`, so the seed reproduces the current site 1:1.
 
-> Images are not committed here (binaries) — only `content.json`. Keep client
-> images out of git or in a dedicated assets store as you prefer.
+> Tatushkiii's images are committed here because they're already public on the
+> live site, which makes the seed turnkey. For other tenants, prefer keeping
+> large binaries out of git (or in a dedicated assets store) and commit only
+> `content.json`.
