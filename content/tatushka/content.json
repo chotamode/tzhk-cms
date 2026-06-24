@@ -1,0 +1,62 @@
+{
+  "tenant": { "name": "Tatushkiii", "slug": "tatushka" },
+  "siteContent": {
+    "hero": {
+      "title": { "en": "SANDU", "cs": "SANDU", "ru": "SANDU" },
+      "subtitle": {
+        "en": "Cybersigilism & abstract tattoo — Prague",
+        "cs": "Kybersigilismus & abstraktní tetování — Praha",
+        "ru": "Киберсигилизм и абстрактные тату — Прага"
+      }
+    },
+    "about": {
+      "heading": { "en": "About", "cs": "O mně", "ru": "Обо мне" },
+      "body": {
+        "en": "First paragraph about the artist.\n\nSecond paragraph.",
+        "cs": "První odstavec o umělci.\n\nDruhý odstavec.",
+        "ru": "Первый абзац о мастере.\n\nВторой абзац."
+      }
+    },
+    "cta": {
+      "label": { "en": "Book now", "cs": "Rezervovat", "ru": "Записаться" }
+    },
+    "contacts": {
+      "telegram": "@doompink",
+      "whatsapp": "+420774685187",
+      "email": "doompynooo@gmail.com"
+    },
+    "socials": [
+      { "platform": "instagram", "url": "https://www.instagram.com/doompink" },
+      { "platform": "telegram", "url": "https://t.me/doompink" }
+    ],
+    "seo": {
+      "metaTitle": { "en": "SANDU — Tattoo", "cs": "SANDU — Tetování", "ru": "SANDU — Тату" },
+      "metaDescription": {
+        "en": "Cybersigilism & abstract tattoo in Prague.",
+        "cs": "Kybersigilismus & abstraktní tetování v Praze.",
+        "ru": "Киберсигилизм и абстрактные тату в Праге."
+      },
+      "ogImage": "og.jpg"
+    }
+  },
+  "portfolio": [
+    {
+      "image": "spine.webp",
+      "label": { "en": "Spine", "cs": "Páteř", "ru": "Позвоночник" },
+      "category": "ornamental",
+      "sort": 1
+    },
+    {
+      "image": "arm.webp",
+      "label": { "en": "Arm", "cs": "Paže", "ru": "Рука" },
+      "category": "lineWork",
+      "sort": 2
+    },
+    {
+      "image": "back.webp",
+      "label": { "en": "Back", "cs": "Záda", "ru": "Спина" },
+      "category": "abstract",
+      "sort": 3
+    }
+  ]
+}
