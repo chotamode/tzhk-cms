@@ -26,6 +26,20 @@ What it does, idempotently (safe to re-run):
 
 See `src/scripts/seedContent.ts` for the exact `content.json` schema. `content/tatushka/` carries the live Tatushkiii content: the real per-locale texts plus the actual site images under `images/`, so the seed reproduces the current site 1:1.
 
+## Tenants in this folder
+
+| Folder | Tenant slug | Site | Seed |
+|--------|-------------|------|------|
+| `content/tatushka/` | `tatushka` | tatushkiii-nextjs | `pnpm seed:content --dir ./content/tatushka` |
+| `content/alfaag/` | `alfaag` | next-knitting-portfolio (Альфия, вязание) | `pnpm seed:content --dir ./content/alfaag` |
+
+`content/alfaag/` carries the knitting site's current Russian copy (homepage hero
++ «Обо мне» + CTA, contacts/socials, SEO) and the «Примеры работ» gallery images,
+so the seed reproduces that site's content. The knitting site is Russian-only;
+`en` values are included only as the importer's fallback locale (`cs` falls back
+to `en`). On a host without the Payload CLI (slim prod image), use the admin
+**Import content** button instead, uploading `content.json` + the images.
+
 > Tatushkiii's images are committed here because they're already public on the
 > live site, which makes the seed turnkey. For other tenants, prefer keeping
 > large binaries out of git (or in a dedicated assets store) and commit only

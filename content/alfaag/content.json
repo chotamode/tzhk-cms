@@ -1,0 +1,96 @@
+{
+  "tenant": {
+    "name": "Вязаные изделия от Альфии",
+    "slug": "alfaag"
+  },
+  "siteContent": {
+    "hero": {
+      "title": {
+        "ru": "Уникальные вязаные изделия",
+        "en": "Unique knitted items"
+      },
+      "subtitle": {
+        "ru": "Откройте для себя уникальные вязаные изделия, созданные с любовью и вниманием к деталям. Наши работы — это воплощение тепла и уюта в каждом стежке. Порадуйте себя или своих близких эксклюзивными вещами ручной работы.",
+        "en": "Discover unique knitted items made with love and attention to detail. Each piece is warmth and comfort in every stitch. Treat yourself or your loved ones to exclusive handmade things."
+      }
+    },
+    "about": {
+      "heading": {
+        "ru": "Обо мне",
+        "en": "About me"
+      },
+      "body": {
+        "ru": "Меня зовут Альфия, и я с удовольствием представляю вам свои работы по вязанию. Я занимаюсь вязанием уже много лет, и каждое изделие для меня — это уникальный процесс, полный заботы и внимания к деталям. Мои работы создаются исключительно из качественных материалов, чтобы обеспечить комфорт и радость тем, кто выбирает вязаные вещи.\n\nЯ всегда стремлюсь к тому, чтобы мои изделия приносили тепло и уют в дом каждого клиента. Каждая шапка, шарф или плед — это не просто предметы одежды, а настоящие произведения рукоделия, которые можно передать из поколения в поколение.\n\nБлагодаря своему опыту и любви к рукоделию, я готова создавать для вас что-то особенное, будь то подарок для близкого человека или элемент интерьера, придающий вашему дому уют и индивидуальность.\n\nПрисоединяйтесь к тем, кто уже оценил мои работы, и дайте мне возможность порадовать вас уникальными вязаными изделиями.",
+        "en": "My name is Alfiya, and I'm happy to share my knitting with you. I've been knitting for many years, and every piece is a unique process full of care and attention to detail. My work is made exclusively from quality materials to bring comfort and joy to everyone who chooses knitted things.\n\nI always aim for my pieces to bring warmth and coziness into every client's home. Each hat, scarf or blanket is not just a garment, but a true piece of craft that can be passed down from generation to generation.\n\nThanks to my experience and love of handicraft, I'm ready to create something special for you — whether a gift for someone dear or an interior accent that adds coziness and character to your home.\n\nJoin those who already love my work, and let me delight you with unique knitted items."
+      }
+    },
+    "cta": {
+      "label": {
+        "ru": "Примеры работ",
+        "en": "View work"
+      }
+    },
+    "contacts": {
+      "telegram": "https://t.me/username",
+      "email": "email@gmail.com"
+    },
+    "socials": [
+      {
+        "platform": "instagram",
+        "url": "https://www.instagram.com/username"
+      },
+      {
+        "platform": "telegram",
+        "url": "https://t.me/username"
+      }
+    ],
+    "seo": {
+      "metaTitle": {
+        "ru": "Вязаные изделия ручной работы от Альфии",
+        "en": "Handmade knitted items by Alfiya"
+      },
+      "metaDescription": {
+        "ru": "Уникальные вязаные изделия ручной работы. Шапки, шарфы, пледы и другие изделия, созданные с любовью и вниманием к деталям.",
+        "en": "Unique handmade knitted items. Hats, scarves, blankets and more, made with love and attention to detail."
+      },
+      "ogImage": "photo_1_2025-04-17_17-17-23.jpg"
+    }
+  },
+  "portfolio": [
+    {
+      "image": "photo_1_2025-04-17_17-17-23.jpg",
+      "label": {
+        "ru": "Пример работы 1",
+        "en": "Work 1"
+      }
+    },
+    {
+      "image": "photo_2_2025-04-17_17-17-23.jpg",
+      "label": {
+        "ru": "Пример работы 2",
+        "en": "Work 2"
+      }
+    },
+    {
+      "image": "photo_3_2025-04-17_17-17-23.jpg",
+      "label": {
+        "ru": "Пример работы 3",
+        "en": "Work 3"
+      }
+    },
+    {
+      "image": "photo_4_2025-04-17_17-17-23.jpg",
+      "label": {
+        "ru": "Пример работы 4",
+        "en": "Work 4"
+      }
+    },
+    {
+      "image": "photo_5_2025-04-17_17-17-23.jpg",
+      "label": {
+        "ru": "Пример работы 5",
+        "en": "Work 5"
+      }
+    }
+  ]
+}
