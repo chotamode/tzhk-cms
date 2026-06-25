@@ -185,31 +185,151 @@ export interface SiteContent {
    * Internal label only (not shown on the site).
    */
   internalTitle?: string | null;
-  hero?: {
-    title?: string | null;
-    subtitle?: string | null;
-  };
-  about?: {
-    heading?: string | null;
-    body?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-  };
-  cta?: {
-    label?: string | null;
-  };
+  /**
+   * Build the page from sections, in display order. Add only what this site needs.
+   */
+  layout?:
+    | (
+        | {
+            title?: string | null;
+            subtitle?: string | null;
+            ctaLabel?: string | null;
+            /**
+             * Where the button links, e.g. /examples or a full URL.
+             */
+            ctaHref?: string | null;
+            image?: (number | null) | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'hero';
+          }
+        | {
+            heading?: string | null;
+            body?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'about';
+          }
+        | {
+            heading?: string | null;
+            /**
+             * Shown in order; drag to reorder.
+             */
+            items?:
+              | {
+                  image: number | Media;
+                  label?: string | null;
+                  /**
+                   * Optional free-form label/category, e.g. «Шапки».
+                   */
+                  tag?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'gallery';
+          }
+        | {
+            heading?: string | null;
+            items?:
+              | {
+                  image: number | Media;
+                  title: string;
+                  description?: string | null;
+                  /**
+                   * Numeric price (no symbol), e.g. 1500.
+                   */
+                  price?: number | null;
+                  currency?: string | null;
+                  /**
+                   * In stock / available to order.
+                   */
+                  available?: boolean | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'products';
+          }
+        | {
+            heading?: string | null;
+            items?:
+              | {
+                  question: string;
+                  answer?: {
+                    root: {
+                      type: string;
+                      children: {
+                        type: any;
+                        version: number;
+                        [k: string]: unknown;
+                      }[];
+                      direction: ('ltr' | 'rtl') | null;
+                      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                      indent: number;
+                      version: number;
+                    };
+                    [k: string]: unknown;
+                  } | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+        | {
+            heading?: string | null;
+            items?:
+              | {
+                  author?: string | null;
+                  text: string;
+                  rating?: number | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'reviews';
+          }
+        | {
+            body?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+      )[]
+    | null;
   contacts?: {
     telegram?: string | null;
     whatsapp?: string | null;
@@ -219,17 +339,6 @@ export interface SiteContent {
     | {
         platform: string;
         url: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Gallery of works shown on the site, ordered by drag handle.
-   */
-  portfolio?:
-    | {
-        label: string;
-        image: number | Media;
-        category?: ('ornamental' | 'lineWork' | 'abstract' | 'whipShading' | 'freehand') | null;
         id?: string | null;
       }[]
     | null;
@@ -417,22 +526,97 @@ export interface TenantsSelect<T extends boolean = true> {
 export interface SiteContentSelect<T extends boolean = true> {
   tenant?: T;
   internalTitle?: T;
-  hero?:
+  layout?:
     | T
     | {
-        title?: T;
-        subtitle?: T;
-      };
-  about?:
-    | T
-    | {
-        heading?: T;
-        body?: T;
-      };
-  cta?:
-    | T
-    | {
-        label?: T;
+        hero?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              ctaLabel?: T;
+              ctaHref?: T;
+              image?: T;
+              id?: T;
+              blockName?: T;
+            };
+        about?:
+          | T
+          | {
+              heading?: T;
+              body?: T;
+              id?: T;
+              blockName?: T;
+            };
+        gallery?:
+          | T
+          | {
+              heading?: T;
+              items?:
+                | T
+                | {
+                    image?: T;
+                    label?: T;
+                    tag?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        products?:
+          | T
+          | {
+              heading?: T;
+              items?:
+                | T
+                | {
+                    image?: T;
+                    title?: T;
+                    description?: T;
+                    price?: T;
+                    currency?: T;
+                    available?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              heading?: T;
+              items?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        reviews?:
+          | T
+          | {
+              heading?: T;
+              items?:
+                | T
+                | {
+                    author?: T;
+                    text?: T;
+                    rating?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        richText?:
+          | T
+          | {
+              body?: T;
+              id?: T;
+              blockName?: T;
+            };
       };
   contacts?:
     | T
@@ -446,14 +630,6 @@ export interface SiteContentSelect<T extends boolean = true> {
     | {
         platform?: T;
         url?: T;
-        id?: T;
-      };
-  portfolio?:
-    | T
-    | {
-        label?: T;
-        image?: T;
-        category?: T;
         id?: T;
       };
   seo?:

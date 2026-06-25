@@ -6,36 +6,88 @@ import type { Payload } from 'payload'
  * (`src/endpoints/importContent.ts`). Keep the upsert in one place so the two
  * entry points can never drift.
  *
- * Idempotent: the tenant (by slug), the single siteContent doc (by tenant) and
- * its portfolio rows (by English label) are matched and updated, not duplicated.
+ * The site content is a per-tenant block builder (`SiteContent.layout`): a
+ * content.json describes an ordered list of sections (hero, about, gallery,
+ * products, faq, reviews, text) plus the cross-cutting contacts/socials/SEO.
+ *
+ * Idempotent: the tenant (by slug) and the single siteContent doc (by tenant)
+ * are matched and updated, not duplicated. Across locales and re-runs the same
+ * block / array-row ids are reused (matched positionally) so localized values
+ * attach to the same rows instead of creating duplicates.
  */
 
 export type Locale = 'en' | 'cs' | 'ru'
 export const LOCALES: Locale[] = ['en', 'cs', 'ru']
 
 export type Localized = Partial<Record<Locale, string>>
-export type Category = 'ornamental' | 'lineWork' | 'abstract' | 'whipShading' | 'freehand'
 
 /** A decoded image ready to hand to Payload's local API `file` option. */
 export type ImageUpload = { data: Buffer; name: string; mimetype: string; size: number }
 
+// --- content.json block shapes -----------------------------------------------
+// Localized leaves are { en, cs, ru }; the importer expands them per locale.
+// `image` fields reference an image by filename (resolved via resolveImage).
+type HeroBlock = {
+  blockType: 'hero'
+  title?: Localized
+  subtitle?: Localized
+  ctaLabel?: Localized
+  ctaHref?: string
+  image?: string
+}
+type AboutBlock = { blockType: 'about'; heading?: Localized; body?: Localized }
+type GalleryBlock = {
+  blockType: 'gallery'
+  heading?: Localized
+  items?: Array<{ image: string; label?: Localized; tag?: Localized }>
+}
+type ProductsBlock = {
+  blockType: 'products'
+  heading?: Localized
+  items?: Array<{
+    image: string
+    title: Localized
+    description?: Localized
+    price?: number
+    currency?: string
+    available?: boolean
+  }>
+}
+type FAQBlock = {
+  blockType: 'faq'
+  heading?: Localized
+  items?: Array<{ question: Localized; answer?: Localized }>
+}
+type ReviewsBlock = {
+  blockType: 'reviews'
+  heading?: Localized
+  items?: Array<{ author?: string; text: Localized; rating?: number }>
+}
+type RichTextBlock = { blockType: 'richText'; body?: Localized }
+
+export type LayoutBlock =
+  | HeroBlock
+  | AboutBlock
+  | GalleryBlock
+  | ProductsBlock
+  | FAQBlock
+  | ReviewsBlock
+  | RichTextBlock
+
 export type ContentFile = {
   tenant: { name: string; slug: string }
   siteContent?: {
-    hero?: { title?: Localized; subtitle?: Localized }
-    about?: { heading?: Localized; body?: Localized }
-    cta?: { label?: Localized }
     contacts?: { telegram?: string; whatsapp?: string; email?: string }
     socials?: Array<{ platform: string; url: string }>
     seo?: { metaTitle?: Localized; metaDescription?: Localized; ogImage?: string }
+    layout?: LayoutBlock[]
   }
-  portfolio?: Array<{ image: string; label: Localized; category?: Category | null }>
 }
 
 export type ImportResult = {
   tenantId: number | string
   tenant: string
-  portfolioCount: number
+  sectionsCount: number
   imagesUploaded: number
 }
 
@@ -96,6 +148,15 @@ export const mimeFromName = (name: string): string => {
   return map[ext] ?? 'application/octet-stream'
 }
 
+// Per-block / per-item ids captured from an existing doc, reused across locales.
+type CapturedIds = { blockIds: Array<string | undefined>; itemIds: Array<Array<string | undefined>> }
+type LoadedBlock = { id?: string; items?: Array<{ id?: string }> }
+
+const captureIds = (layout: LoadedBlock[] | undefined): CapturedIds => ({
+  blockIds: (layout ?? []).map((b) => b.id),
+  itemIds: (layout ?? []).map((b) => (b.items ?? []).map((it) => it.id)),
+})
+
 export async function importContent(opts: ImportOptions): Promise<ImportResult> {
   const { payload, content, resolveImage, forceTenantId } = opts
   const log = opts.log ?? (() => {})
@@ -145,12 +206,14 @@ export async function importContent(opts: ImportOptions): Promise<ImportResult> 
     mediaCache.set(name, id)
     return id
   }
+  const imageId = (name: string): number | null => mediaCache.get(name) ?? null
 
-  let portfolioCount = 0
+  const sc = content.siteContent
+  const layout = sc?.layout ?? []
+  let sectionsCount = 0
 
-  // --- Site content + portfolio (one document per tenant) ---
-  if (content.siteContent) {
-    const sc = content.siteContent
+  // --- Site content (one document per tenant) ---
+  if (sc) {
     const found = await payload.find({
       collection: 'siteContent',
       where: { tenant: { equals: tenantId } },
@@ -160,11 +223,7 @@ export async function importContent(opts: ImportOptions): Promise<ImportResult> 
       depth: 0,
     })
     const existing = found.docs[0] as
-      | {
-          id: string | number
-          seo?: { ogImage?: unknown }
-          portfolio?: Array<{ id?: string; label?: string; image?: unknown }>
-        }
+      | { id: string | number; seo?: { ogImage?: unknown }; layout?: LoadedBlock[] }
       | undefined
 
     // Reuse the OG image already attached on re-run; upload only when new.
@@ -174,33 +233,104 @@ export async function importContent(opts: ImportOptions): Promise<ImportResult> 
         ? await uploadImage(sc.seo.ogImage, 'OG image')
         : undefined
 
-    // Portfolio rows: upload each image once, reusing the one already attached
-    // to a matching row on re-run (matched by English label).
-    const portfolioRows: Array<{ label: Localized; image: number; category: Category | null }> = []
-    for (const item of content.portfolio ?? []) {
-      const labelEn = L(item.label, 'en')
-      const prior = existing?.portfolio?.find((p) => p.label === labelEn)
-      const imageId = (prior ? extractId(prior.image) : undefined) ?? (await uploadImage(item.image, labelEn))
-      portfolioRows.push({ label: item.label, image: imageId, category: item.category ?? null })
+    // Upload every image referenced anywhere in the layout, once. After this
+    // `imageId(name)` resolves synchronously inside the per-locale builder.
+    for (const block of layout) {
+      if (block.blockType === 'hero' && block.image) {
+        await uploadImage(block.image, L(block.title, 'en') || 'Hero')
+      } else if (block.blockType === 'gallery') {
+        for (const it of block.items ?? []) await uploadImage(it.image, L(it.label, 'en'))
+      } else if (block.blockType === 'products') {
+        for (const it of block.items ?? []) await uploadImage(it.image, L(it.title, 'en'))
+      }
     }
-    portfolioCount = portfolioRows.length
+    sectionsCount = layout.length
 
-    // `rowIds[i]` reuses an existing array-row id so localized labels update in
-    // place across locales/re-runs instead of duplicating rows; undefined ⇒ new.
-    const build = (loc: Locale, rowIds: Array<string | undefined>) => ({
+    // Build the `layout` array for one locale, optionally reusing block /
+    // item ids so localized values update the same rows across locales.
+    const buildLayout = (loc: Locale, ids: CapturedIds) =>
+      layout.map((block, bi) => {
+        const withId = ids.blockIds[bi] ? { id: ids.blockIds[bi] } : {}
+        const itemId = (ii: number) => (ids.itemIds[bi]?.[ii] ? { id: ids.itemIds[bi][ii] } : {})
+        switch (block.blockType) {
+          case 'hero':
+            return {
+              ...withId,
+              blockType: 'hero' as const,
+              title: L(block.title, loc),
+              subtitle: L(block.subtitle, loc),
+              ctaLabel: L(block.ctaLabel, loc),
+              ctaHref: block.ctaHref ?? null,
+              image: block.image ? imageId(block.image) : null,
+            }
+          case 'about':
+            return {
+              ...withId,
+              blockType: 'about' as const,
+              heading: L(block.heading, loc),
+              body: textToLexical(L(block.body, loc)),
+            }
+          case 'gallery':
+            return {
+              ...withId,
+              blockType: 'gallery' as const,
+              heading: L(block.heading, loc),
+              items: (block.items ?? []).map((it, ii) => ({
+                ...itemId(ii),
+                image: imageId(it.image),
+                label: L(it.label, loc),
+                tag: L(it.tag, loc),
+              })),
+            }
+          case 'products':
+            return {
+              ...withId,
+              blockType: 'products' as const,
+              heading: L(block.heading, loc),
+              items: (block.items ?? []).map((it, ii) => ({
+                ...itemId(ii),
+                image: imageId(it.image),
+                title: L(it.title, loc),
+                description: L(it.description, loc),
+                price: it.price ?? null,
+                currency: it.currency ?? 'RUB',
+                available: it.available ?? true,
+              })),
+            }
+          case 'faq':
+            return {
+              ...withId,
+              blockType: 'faq' as const,
+              heading: L(block.heading, loc),
+              items: (block.items ?? []).map((it, ii) => ({
+                ...itemId(ii),
+                question: L(it.question, loc),
+                answer: textToLexical(L(it.answer, loc)),
+              })),
+            }
+          case 'reviews':
+            return {
+              ...withId,
+              blockType: 'reviews' as const,
+              heading: L(block.heading, loc),
+              items: (block.items ?? []).map((it, ii) => ({
+                ...itemId(ii),
+                author: it.author ?? null,
+                text: L(it.text, loc),
+                rating: it.rating ?? null,
+              })),
+            }
+          case 'richText':
+            return { ...withId, blockType: 'richText' as const, body: textToLexical(L(block.body, loc)) }
+        }
+      })
+
+    const buildDoc = (loc: Locale, ids: CapturedIds) => ({
       internalTitle: 'Homepage',
       tenant: tenantId,
-      hero: { title: L(sc.hero?.title, loc), subtitle: L(sc.hero?.subtitle, loc) },
-      about: { heading: L(sc.about?.heading, loc), body: textToLexical(L(sc.about?.body, loc)) },
-      cta: { label: L(sc.cta?.label, loc) },
+      layout: buildLayout(loc, ids),
       contacts: sc.contacts ?? {},
       socials: sc.socials ?? [],
-      portfolio: portfolioRows.map((row, i) => ({
-        ...(rowIds[i] ? { id: rowIds[i] } : {}),
-        label: L(row.label, loc),
-        image: row.image,
-        category: row.category,
-      })),
       seo: {
         metaTitle: L(sc.seo?.metaTitle, loc),
         metaDescription: L(sc.seo?.metaDescription, loc),
@@ -208,36 +338,48 @@ export async function importContent(opts: ImportOptions): Promise<ImportResult> 
       },
     })
 
-    const existingRowIds = existing?.portfolio?.map((p) => p.id) ?? []
-
+    // First write (en): reuse existing ids on re-run so rows update in place.
     let id = existing?.id
+    const initialIds = captureIds(existing?.layout)
     if (!id) {
       const created = await payload.create({
         collection: 'siteContent',
-        data: build('en', existingRowIds),
+        data: buildDoc('en', initialIds) as never,
         locale: 'en',
         overrideAccess: true,
       })
       id = created.id
     } else {
-      await payload.update({ collection: 'siteContent', id, data: build('en', existingRowIds), locale: 'en', overrideAccess: true })
+      await payload.update({
+        collection: 'siteContent',
+        id,
+        data: buildDoc('en', initialIds) as never,
+        locale: 'en',
+        overrideAccess: true,
+      })
     }
 
-    // Re-read to capture the array-row ids Payload assigned on create, then
-    // write the cs/ru labels against those same rows (localized array fields).
+    // Re-read to capture the ids Payload assigned, then write cs/ru against the
+    // same blocks/rows (localized fields), so locales don't duplicate rows.
     const afterEn = (await payload.findByID({
       collection: 'siteContent',
       id,
       locale: 'en',
       depth: 0,
       overrideAccess: true,
-    })) as { portfolio?: Array<{ id?: string }> }
-    const rowIds = (afterEn.portfolio ?? []).map((p) => p.id)
+    })) as { layout?: LoadedBlock[] }
+    const ids = captureIds(afterEn.layout)
     for (const loc of ['cs', 'ru'] as Locale[]) {
-      await payload.update({ collection: 'siteContent', id, data: build(loc, rowIds), locale: loc, overrideAccess: true })
+      await payload.update({
+        collection: 'siteContent',
+        id,
+        data: buildDoc(loc, ids) as never,
+        locale: loc,
+        overrideAccess: true,
+      })
     }
-    log(`Site content + ${portfolioCount} portfolio item(s) imported (en/cs/ru).`)
+    log(`Site content imported: ${sectionsCount} section(s) (en/cs/ru).`)
   }
 
-  return { tenantId, tenant: tenantName, portfolioCount, imagesUploaded }
+  return { tenantId, tenant: tenantName, sectionsCount, imagesUploaded }
 }

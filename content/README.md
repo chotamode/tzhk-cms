@@ -4,12 +4,17 @@ Fill a tenant's content in one shot from a folder.
 
 ```
 content/<tenant>/
-  content.json      # all texts (per locale) + portfolio list
+  content.json      # page sections (blocks) + contacts/socials/SEO, per locale
   images/           # image files referenced by name in content.json
     spine.webp
     arm.webp
     og.jpg
 ```
+
+`content.json` describes the page as an ordered list of **blocks** under
+`siteContent.layout` (`hero`, `about`, `gallery`, `products`, `faq`, `reviews`,
+`richText`), plus the cross-cutting `contacts` / `socials` / `seo`. Localized
+leaves are `{ en, cs, ru }`. See `src/lib/importContent.ts` for the exact shape.
 
 Run (locally / in a full project with DB access — not the slim prod image):
 
@@ -20,11 +25,14 @@ pnpm seed:content --dir ./content/tatushka
 What it does, idempotently (safe to re-run):
 - creates the tenant (by `slug`) if missing,
 - uploads each referenced image to **Media** → R2 (skips ones already uploaded, matched by filename),
-- writes the single **Site content** doc for the tenant (en/cs/ru), including the
-  **portfolio** gallery as an array on that document (display order = array
-  order; rows matched by English label on re-run, so labels update in place).
+- writes the single **Site content** doc for the tenant (en/cs/ru): the `layout`
+  blocks in order, plus contacts/socials/SEO. Across locales and re-runs the same
+  block / array-row ids are reused (matched positionally), so localized values
+  update the same rows instead of duplicating.
 
-See `src/scripts/seedContent.ts` for the exact `content.json` schema. `content/tatushka/` carries the live Tatushkiii content: the real per-locale texts plus the actual site images under `images/`, so the seed reproduces the current site 1:1.
+`content/tatushka/` carries the live Tatushkiii content as blocks (hero + about +
+gallery), the real per-locale texts plus the actual site images under `images/`,
+so the seed reproduces the current site 1:1.
 
 ## Tenants in this folder
 

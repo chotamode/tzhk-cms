@@ -1,14 +1,22 @@
 import type { CollectionConfig } from 'payload'
 
+import { layoutBlocks } from '../blocks'
 import { createTenantDocument } from '../access/createTenantDocument'
 
 /**
- * Editable site content (texts, contacts, SEO) for a tenant's landing page.
+ * Editable site content for a tenant.
  *
  * Registered with the multi-tenant plugin as `isGlobal: true`, so it behaves as
- * a single per-tenant document: each client edits *their* homepage copy, the
- * frontend fetches the one row for its tenant. Text fields are localized
- * (en/cs/ru). Drafts are enabled so edits can be previewed before publishing.
+ * a single per-tenant document: each client edits *their* site, the frontend
+ * fetches the one row for its tenant. Drafts are enabled so edits can be
+ * previewed before publishing.
+ *
+ * The page itself is a **block builder** (`layout`): each tenant composes its
+ * page from a shared palette of sections (Hero, About, Gallery, Products, FAQ,
+ * Reviews, Text) instead of a fixed set of fields. This keeps one schema across
+ * structurally different sites without site-specific fields leaking between
+ * tenants. The cross-cutting site settings (contacts, socials, SEO) stay as
+ * fixed fields because they belong to the site as a whole, not to a section.
  */
 export const SiteContent: CollectionConfig = {
   slug: 'siteContent',
@@ -40,25 +48,13 @@ export const SiteContent: CollectionConfig = {
       },
     },
     {
-      type: 'group',
-      name: 'hero',
-      fields: [
-        { name: 'title', type: 'text', localized: true },
-        { name: 'subtitle', type: 'text', localized: true },
-      ],
-    },
-    {
-      type: 'group',
-      name: 'about',
-      fields: [
-        { name: 'heading', type: 'text', localized: true },
-        { name: 'body', type: 'richText', localized: true },
-      ],
-    },
-    {
-      type: 'group',
-      name: 'cta',
-      fields: [{ name: 'label', type: 'text', localized: true }],
+      name: 'layout',
+      type: 'blocks',
+      labels: { singular: 'Section', plural: 'Page sections' },
+      blocks: layoutBlocks,
+      admin: {
+        description: 'Build the page from sections, in display order. Add only what this site needs.',
+      },
     },
     {
       type: 'group',
@@ -76,23 +72,6 @@ export const SiteContent: CollectionConfig = {
       fields: [
         { name: 'platform', type: 'text', required: true },
         { name: 'url', type: 'text', required: true },
-      ],
-    },
-    {
-      name: 'portfolio',
-      type: 'array',
-      labels: { singular: 'Work', plural: 'Portfolio' },
-      admin: {
-        description: 'Gallery of works shown on the site, ordered by drag handle.',
-      },
-      fields: [
-        { name: 'label', type: 'text', localized: true, required: true },
-        { name: 'image', type: 'upload', relationTo: 'media', required: true },
-        {
-          name: 'category',
-          type: 'select',
-          options: ['ornamental', 'lineWork', 'abstract', 'whipShading', 'freehand'],
-        },
       ],
     },
     {
