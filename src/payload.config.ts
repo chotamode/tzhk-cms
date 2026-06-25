@@ -13,6 +13,7 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Tenants } from './collections/Tenants'
 import { SiteContent } from './collections/SiteContent'
+import { importContentEndpoint } from './endpoints/importContent'
 import { migrations } from './migrations'
 import type { User } from './payload-types'
 
@@ -86,8 +87,13 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      // "Import content" uploader shown on the admin dashboard.
+      beforeDashboard: ['/components/ImportContent#default'],
+    },
   },
   collections: [Users, Tenants, SiteContent, Media],
+  endpoints: [importContentEndpoint],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
