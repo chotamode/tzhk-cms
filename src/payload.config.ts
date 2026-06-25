@@ -37,24 +37,29 @@ const allowedOrigins = (process.env.CORS_ORIGINS || serverURL)
 // them we fall back to local disk, which is fine for local development only.
 // Works with any S3-compatible provider; for Cloudflare R2 set S3_ENDPOINT to
 // https://<account-id>.r2.cloudflarestorage.com and S3_REGION=auto.
-const storagePlugins: Plugin[] = process.env.S3_BUCKET
-  ? [
-      s3Storage({
-        collections: { media: true },
-        bucket: process.env.S3_BUCKET,
-        config: {
-          region: process.env.S3_REGION || 'auto',
-          endpoint: process.env.S3_ENDPOINT,
-          // Required for R2 / most non-AWS S3-compatible providers.
-          forcePathStyle: true,
-          credentials: {
-            accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-          },
-        },
-      }),
-    ]
-  : []
+//
+// The plugin is ALWAYS registered (toggled via `enabled`) rather than
+// conditionally pushed. This keeps its admin client component present in the
+// importMap regardless of whether S3_* env is set when `generate:importmap`
+// runs — otherwise a generation without S3_BUCKET silently drops the
+// S3ClientUploadHandler and the production server warns it can't be found.
+const storagePlugins: Plugin[] = [
+  s3Storage({
+    enabled: Boolean(process.env.S3_BUCKET),
+    collections: { media: true },
+    bucket: process.env.S3_BUCKET || '',
+    config: {
+      region: process.env.S3_REGION || 'auto',
+      endpoint: process.env.S3_ENDPOINT,
+      // Required for R2 / most non-AWS S3-compatible providers.
+      forcePathStyle: true,
+      credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+      },
+    },
+  }),
+]
 
 // --- Email ---------------------------------------------------------------
 // When SMTP settings are present, send real email (password resets, invites)
