@@ -16,6 +16,15 @@ export const Media: CollectionConfig = {
       type: 'text',
       required: true,
     },
+    {
+      // Tags live on the media itself (single source of truth), so an image
+      // carries its tags everywhere it's used and galleries can filter by them.
+      name: 'tags',
+      type: 'relationship',
+      relationTo: 'tags',
+      hasMany: true,
+      admin: { description: 'Tags for filtering this image in galleries.' },
+    },
   ],
   upload: {
     // Accept images only.

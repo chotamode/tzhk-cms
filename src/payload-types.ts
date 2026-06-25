@@ -71,6 +71,7 @@ export interface Config {
     tenants: Tenant;
     siteContent: SiteContent;
     media: Media;
+    tags: Tag;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -82,6 +83,7 @@ export interface Config {
     tenants: TenantsSelect<false> | TenantsSelect<true>;
     siteContent: SiteContentSelect<false> | SiteContentSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    tags: TagsSelect<false> | TagsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -227,19 +229,27 @@ export interface SiteContent {
         | {
             heading?: string | null;
             /**
+             * Pick images by hand, or show everything matching tags.
+             */
+            source?: ('curated' | 'byTags') | null;
+            /**
              * Shown in order; drag to reorder.
              */
             items?:
               | {
                   image: number | Media;
                   label?: string | null;
-                  /**
-                   * Optional free-form label/category, e.g. «Шапки».
-                   */
-                  tag?: string | null;
                   id?: string | null;
                 }[]
               | null;
+            /**
+             * Show every image tagged with any of these.
+             */
+            filterTags?: (number | Tag)[] | null;
+            /**
+             * Max images to show (byTags mode).
+             */
+            limit?: number | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'gallery';
@@ -359,6 +369,10 @@ export interface Media {
   id: number;
   tenant?: (number | null) | Tenant;
   alt: string;
+  /**
+   * Tags for filtering this image in galleries.
+   */
+  tags?: (number | Tag)[] | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -399,6 +413,28 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  /**
+   * Display label, e.g. «Шапки» / «Hats».
+   */
+  name: string;
+  /**
+   * Stable id for filtering/URLs, e.g. "hats". Lowercase, no spaces.
+   */
+  slug: string;
+  /**
+   * Optional namespace so one tag engine can cover several axes.
+   */
+  kind?: ('category' | 'material' | 'colour' | 'technique' | 'other') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -436,6 +472,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'tags';
+        value: number | Tag;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -552,14 +592,16 @@ export interface SiteContentSelect<T extends boolean = true> {
           | T
           | {
               heading?: T;
+              source?: T;
               items?:
                 | T
                 | {
                     image?: T;
                     label?: T;
-                    tag?: T;
                     id?: T;
                   };
+              filterTags?: T;
+              limit?: T;
               id?: T;
               blockName?: T;
             };
@@ -650,6 +692,7 @@ export interface SiteContentSelect<T extends boolean = true> {
 export interface MediaSelect<T extends boolean = true> {
   tenant?: T;
   alt?: T;
+  tags?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -695,6 +738,18 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags_select".
+ */
+export interface TagsSelect<T extends boolean = true> {
+  tenant?: T;
+  name?: T;
+  slug?: T;
+  kind?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

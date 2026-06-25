@@ -16,6 +16,11 @@ content/<tenant>/
 `richText`), plus the cross-cutting `contacts` / `socials` / `seo`. Localized
 leaves are `{ en, cs, ru }`. See `src/lib/importContent.ts` for the exact shape.
 
+**Tags** are defined once under a top-level `tags` array (`{ slug, name, kind }`)
+and referenced by `slug`: on a gallery/products item (`"tags": ["hats"]`) they
+tag the item's image in the Media library; on a `source: "byTags"` gallery they
+select what to show. Referenced slugs that aren't defined are auto-created.
+
 Run (locally / in a full project with DB access — not the slim prod image):
 
 ```bash

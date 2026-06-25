@@ -3,6 +3,11 @@
     "name": "Tatushkiii",
     "slug": "tatushka"
   },
+  "tags": [
+    { "slug": "ornamental", "kind": "technique", "name": { "en": "Ornamental", "cs": "Ornamentální", "ru": "Орнаментал" } },
+    { "slug": "linework", "kind": "technique", "name": { "en": "Linework", "cs": "Linky", "ru": "Лайнворк" } },
+    { "slug": "abstract", "kind": "technique", "name": { "en": "Abstract", "cs": "Abstraktní", "ru": "Абстракция" } }
+  ],
   "siteContent": {
     "contacts": {
       "telegram": "@doompink",
@@ -29,29 +34,17 @@
     "layout": [
       {
         "blockType": "hero",
-        "title": {
-          "en": "TATTOOS",
-          "cs": "TETOVÁNÍ",
-          "ru": "ТАТУ"
-        },
+        "title": { "en": "TATTOOS", "cs": "TETOVÁNÍ", "ru": "ТАТУ" },
         "subtitle": {
           "en": "Custom designs. Raw aesthetics. Precise. Sterile. Ethereal.",
           "cs": "Vlastní návrhy. Surová estetika. Přesné. Sterilní. Éterické.",
           "ru": "Кастомные эскизы. Сырая эстетика. Точно. Стерильно. Эфирно."
         },
-        "ctaLabel": {
-          "en": "Book Session",
-          "cs": "Rezervovat termín",
-          "ru": "Записаться на сеанс"
-        }
+        "ctaLabel": { "en": "Book Session", "cs": "Rezervovat termín", "ru": "Записаться на сеанс" }
       },
       {
         "blockType": "about",
-        "heading": {
-          "en": "HI! I'M SANDU",
-          "cs": "AHOJ! JSEM SANDU",
-          "ru": "ПРИВЕТ! Я САНДУ"
-        },
+        "heading": { "en": "HI! I'M SANDU", "cs": "AHOJ! JSEM SANDU", "ru": "ПРИВЕТ! Я САНДУ" },
         "body": {
           "en": "I'm a tattoo artist with 4 years of experience and a huge love for tattooing.\n\nI specialize in linework, ornamental designs, and black & red tones. But I'm a flexible artist, so don't worry, we'll make something stylish that suits you.",
           "cs": "Jsem tetovací umělkyně se 4 lety zkušeností a obrovskou láskou k tetování.\n\nSpecializuji se na linky, ornamentální vzory a černočervené tóny. Jsem ale flexibilní umělkyně, takže se neboj, vytvoříme něco stylovýho, co ti bude sedět.",
@@ -60,22 +53,11 @@
       },
       {
         "blockType": "gallery",
+        "source": "curated",
         "items": [
-          {
-            "image": "spine.webp",
-            "label": { "en": "Spine", "cs": "Páteř", "ru": "Спина" },
-            "tag": { "en": "ornamental", "cs": "ornamentální", "ru": "орнаментал" }
-          },
-          {
-            "image": "arm.webp",
-            "label": { "en": "Arm", "cs": "Ruka", "ru": "Рука" },
-            "tag": { "en": "linework", "cs": "linky", "ru": "лайнворк" }
-          },
-          {
-            "image": "back.webp",
-            "label": { "en": "Back", "cs": "Záda", "ru": "Спина" },
-            "tag": { "en": "abstract", "cs": "abstraktní", "ru": "абстракция" }
-          }
+          { "image": "spine.webp", "label": { "en": "Spine", "cs": "Páteř", "ru": "Спина" }, "tags": ["ornamental"] },
+          { "image": "arm.webp", "label": { "en": "Arm", "cs": "Ruka", "ru": "Рука" }, "tags": ["linework"] },
+          { "image": "back.webp", "label": { "en": "Back", "cs": "Záda", "ru": "Спина" }, "tags": ["abstract"] }
         ]
       }
     ]

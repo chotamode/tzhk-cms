@@ -36,10 +36,15 @@ type HeroBlock = {
   image?: string
 }
 type AboutBlock = { blockType: 'about'; heading?: Localized; body?: Localized }
+// Tags are referenced by slug. On a gallery/products item they tag the item's
+// image (in the Media library); on a byTags gallery they select what to show.
 type GalleryBlock = {
   blockType: 'gallery'
   heading?: Localized
-  items?: Array<{ image: string; label?: Localized; tag?: Localized }>
+  source?: 'curated' | 'byTags'
+  items?: Array<{ image: string; label?: Localized; tags?: string[] }>
+  filterTags?: string[]
+  limit?: number
 }
 type ProductsBlock = {
   blockType: 'products'
@@ -51,6 +56,7 @@ type ProductsBlock = {
     price?: number
     currency?: string
     available?: boolean
+    tags?: string[]
   }>
 }
 type FAQBlock = {
@@ -74,8 +80,12 @@ export type LayoutBlock =
   | ReviewsBlock
   | RichTextBlock
 
+export type TagDef = { slug: string; name?: Localized; kind?: string }
+
 export type ContentFile = {
   tenant: { name: string; slug: string }
+  /** Tag taxonomy for this tenant (optional; referenced slugs are auto-created). */
+  tags?: TagDef[]
   siteContent?: {
     contacts?: { telegram?: string; whatsapp?: string; email?: string }
     socials?: Array<{ platform: string; url: string }>
@@ -191,12 +201,12 @@ export async function importContent(opts: ImportOptions): Promise<ImportResult> 
   // --- Media uploader (one upload per source name within this run) ---
   let imagesUploaded = 0
   const mediaCache = new Map<string, number>()
-  const uploadImage = async (name: string, alt: string): Promise<number> => {
+  const uploadImage = async (name: string, alt: string, tagIds?: number[]): Promise<number> => {
     if (mediaCache.has(name)) return mediaCache.get(name) as number
     const img = await resolveImage(name)
     const created = await payload.create({
       collection: 'media',
-      data: { alt: alt || name, tenant: tenantId },
+      data: { alt: alt || name, tenant: tenantId, ...(tagIds?.length ? { tags: tagIds } : {}) },
       file: { data: img.data, mimetype: img.mimetype, name: img.name, size: img.size },
       overrideAccess: true,
     })
@@ -211,6 +221,70 @@ export async function importContent(opts: ImportOptions): Promise<ImportResult> 
   const sc = content.siteContent
   const layout = sc?.layout ?? []
   let sectionsCount = 0
+
+  // --- Tags (taxonomy) ---------------------------------------------------------
+  // Upsert defined tags + any slug referenced by an item/gallery, by (tenant,
+  // slug). Returns slug → id so media can be tagged and byTags galleries
+  // resolved. Tag `name` is localized; `slug`/`kind` are not.
+  const tagId = new Map<string, number>()
+  const resolveTags = async (): Promise<void> => {
+    const defined = new Map((content.tags ?? []).map((t) => [t.slug, t]))
+    const referenced = new Set<string>()
+    for (const block of layout) {
+      if (block.blockType === 'gallery') {
+        if (block.source === 'byTags') (block.filterTags ?? []).forEach((s) => referenced.add(s))
+        else for (const it of block.items ?? []) (it.tags ?? []).forEach((s) => referenced.add(s))
+      } else if (block.blockType === 'products') {
+        for (const it of block.items ?? []) (it.tags ?? []).forEach((s) => referenced.add(s))
+      }
+    }
+    for (const slug of new Set<string>([...defined.keys(), ...referenced])) {
+      const def = defined.get(slug)
+      const kind = def?.kind ?? 'category'
+      const nameEn = (def?.name ? L(def.name, 'en') : '') || slug
+      const found = await payload.find({
+        collection: 'tags',
+        where: { and: [{ tenant: { equals: tenantId } }, { slug: { equals: slug } }] },
+        limit: 1,
+        locale: 'en',
+        depth: 0,
+        overrideAccess: true,
+      })
+      let id = found.docs[0]?.id as number | undefined
+      if (id == null) {
+        const created = await payload.create({
+          collection: 'tags',
+          data: { slug, name: nameEn, kind, tenant: tenantId } as never,
+          locale: 'en',
+          overrideAccess: true,
+        })
+        id = created.id as number
+      } else {
+        await payload.update({
+          collection: 'tags',
+          id,
+          data: { name: nameEn, kind } as never,
+          locale: 'en',
+          overrideAccess: true,
+        })
+      }
+      if (def?.name) {
+        for (const loc of ['cs', 'ru'] as Locale[]) {
+          await payload.update({
+            collection: 'tags',
+            id,
+            data: { name: L(def.name, loc) } as never,
+            locale: loc,
+            overrideAccess: true,
+          })
+        }
+      }
+      tagId.set(slug, id)
+    }
+  }
+  await resolveTags()
+  const tagIdsFor = (slugs?: string[]): number[] =>
+    (slugs ?? []).map((s) => tagId.get(s)).filter((n): n is number => n != null)
 
   // --- Site content (one document per tenant) ---
   if (sc) {
@@ -238,10 +312,12 @@ export async function importContent(opts: ImportOptions): Promise<ImportResult> 
     for (const block of layout) {
       if (block.blockType === 'hero' && block.image) {
         await uploadImage(block.image, L(block.title, 'en') || 'Hero')
-      } else if (block.blockType === 'gallery') {
-        for (const it of block.items ?? []) await uploadImage(it.image, L(it.label, 'en'))
+      } else if (block.blockType === 'gallery' && block.source !== 'byTags') {
+        for (const it of block.items ?? [])
+          await uploadImage(it.image, L(it.label, 'en'), tagIdsFor(it.tags))
       } else if (block.blockType === 'products') {
-        for (const it of block.items ?? []) await uploadImage(it.image, L(it.title, 'en'))
+        for (const it of block.items ?? [])
+          await uploadImage(it.image, L(it.title, 'en'), tagIdsFor(it.tags))
       }
     }
     sectionsCount = layout.length
@@ -270,18 +346,24 @@ export async function importContent(opts: ImportOptions): Promise<ImportResult> 
               heading: L(block.heading, loc),
               body: textToLexical(L(block.body, loc)),
             }
-          case 'gallery':
+          case 'gallery': {
+            const byTags = block.source === 'byTags'
             return {
               ...withId,
               blockType: 'gallery' as const,
               heading: L(block.heading, loc),
-              items: (block.items ?? []).map((it, ii) => ({
-                ...itemId(ii),
-                image: imageId(it.image),
-                label: L(it.label, loc),
-                tag: L(it.tag, loc),
-              })),
+              source: byTags ? 'byTags' : 'curated',
+              items: byTags
+                ? []
+                : (block.items ?? []).map((it, ii) => ({
+                    ...itemId(ii),
+                    image: imageId(it.image),
+                    label: L(it.label, loc),
+                  })),
+              filterTags: byTags ? tagIdsFor(block.filterTags) : [],
+              limit: byTags ? (block.limit ?? 24) : undefined,
             }
+          }
           case 'products':
             return {
               ...withId,
