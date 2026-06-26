@@ -12,6 +12,7 @@ import sharp from 'sharp'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Tenants } from './collections/Tenants'
+import { Tags } from './collections/Tags'
 import { SiteContent } from './collections/SiteContent'
 import { importContentEndpoint } from './endpoints/importContent'
 import { migrations } from './migrations'
@@ -97,7 +98,7 @@ export default buildConfig({
       beforeDashboard: ['/components/ImportContent#default'],
     },
   },
-  collections: [Users, Tenants, SiteContent, Media],
+  collections: [Users, Tenants, SiteContent, Media, Tags],
   endpoints: [importContentEndpoint],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -129,8 +130,10 @@ export default buildConfig({
       // Collections whose documents belong to a single tenant.
       collections: {
         media: {},
+        // Reusable per-tenant tag taxonomy (media tagging + gallery filtering).
+        tags: {},
         // One editable document per tenant (landing-page content/texts/SEO +
-        // the portfolio gallery, kept as an array on this single document).
+        // the page sections, kept as a block builder on this single document).
         siteContent: { isGlobal: true },
       },
       // Super-admins can switch between and manage every tenant.

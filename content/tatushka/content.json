@@ -3,52 +3,20 @@
     "name": "Tatushkiii",
     "slug": "tatushka"
   },
+  "tags": [
+    { "slug": "ornamental", "kind": "technique", "name": { "en": "Ornamental", "cs": "Ornamentální", "ru": "Орнаментал" } },
+    { "slug": "linework", "kind": "technique", "name": { "en": "Linework", "cs": "Linky", "ru": "Лайнворк" } },
+    { "slug": "abstract", "kind": "technique", "name": { "en": "Abstract", "cs": "Abstraktní", "ru": "Абстракция" } }
+  ],
   "siteContent": {
-    "hero": {
-      "title": {
-        "en": "TATTOOS",
-        "cs": "TETOVÁNÍ",
-        "ru": "ТАТУ"
-      },
-      "subtitle": {
-        "en": "Custom designs. Raw aesthetics. Precise. Sterile. Ethereal.",
-        "cs": "Vlastní návrhy. Surová estetika. Přesné. Sterilní. Éterické.",
-        "ru": "Кастомные эскизы. Сырая эстетика. Точно. Стерильно. Эфирно."
-      }
-    },
-    "about": {
-      "heading": {
-        "en": "HI! I'M SANDU",
-        "cs": "AHOJ! JSEM SANDU",
-        "ru": "ПРИВЕТ! Я САНДУ"
-      },
-      "body": {
-        "en": "I'm a tattoo artist with 4 years of experience and a huge love for tattooing.\n\nI specialize in linework, ornamental designs, and black & red tones. But I'm a flexible artist, so don't worry, we'll make something stylish that suits you.",
-        "cs": "Jsem tetovací umělkyně se 4 lety zkušeností a obrovskou láskou k tetování.\n\nSpecializuji se na linky, ornamentální vzory a černočervené tóny. Jsem ale flexibilní umělkyně, takže se neboj, vytvoříme něco stylovýho, co ti bude sedět.",
-        "ru": "Я тату-мастер с 4-летним опытом и огромной любовью к татуировкам.\n\nЯ специализируюсь на лайнворке, орнаментальных дизайнах и черно-красных тонах. Но я гибкая художница, так что не волнуйся, мы сделаем что-то стильное, что тебе подойдет."
-      }
-    },
-    "cta": {
-      "label": {
-        "en": "Book Session",
-        "cs": "Rezervovat termín",
-        "ru": "Записаться на сеанс"
-      }
-    },
     "contacts": {
       "telegram": "@doompink",
       "whatsapp": "+420774685187",
       "email": "doompynooo@gmail.com"
     },
     "socials": [
-      {
-        "platform": "instagram",
-        "url": "https://www.instagram.com/doompink"
-      },
-      {
-        "platform": "telegram",
-        "url": "https://t.me/doompink"
-      }
+      { "platform": "instagram", "url": "https://www.instagram.com/doompink" },
+      { "platform": "telegram", "url": "https://t.me/doompink" }
     ],
     "seo": {
       "metaTitle": {
@@ -62,35 +30,36 @@
         "ru": "Кастомные тату-эскизы в Праге. Специализация: орнаментал, лайнворк, абстракция и киберсигилизм. 4 года опыта. Запишись на сеанс."
       },
       "ogImage": "og.jpg"
-    }
-  },
-  "portfolio": [
-    {
-      "image": "spine.webp",
-      "label": {
-        "en": "Spine",
-        "cs": "Páteř",
-        "ru": "Спина"
-      },
-      "category": "ornamental"
     },
-    {
-      "image": "arm.webp",
-      "label": {
-        "en": "Arm",
-        "cs": "Ruka",
-        "ru": "Рука"
+    "layout": [
+      {
+        "blockType": "hero",
+        "title": { "en": "TATTOOS", "cs": "TETOVÁNÍ", "ru": "ТАТУ" },
+        "subtitle": {
+          "en": "Custom designs. Raw aesthetics. Precise. Sterile. Ethereal.",
+          "cs": "Vlastní návrhy. Surová estetika. Přesné. Sterilní. Éterické.",
+          "ru": "Кастомные эскизы. Сырая эстетика. Точно. Стерильно. Эфирно."
+        },
+        "ctaLabel": { "en": "Book Session", "cs": "Rezervovat termín", "ru": "Записаться на сеанс" }
       },
-      "category": "lineWork"
-    },
-    {
-      "image": "back.webp",
-      "label": {
-        "en": "Back",
-        "cs": "Záda",
-        "ru": "Спина"
+      {
+        "blockType": "about",
+        "heading": { "en": "HI! I'M SANDU", "cs": "AHOJ! JSEM SANDU", "ru": "ПРИВЕТ! Я САНДУ" },
+        "body": {
+          "en": "I'm a tattoo artist with 4 years of experience and a huge love for tattooing.\n\nI specialize in linework, ornamental designs, and black & red tones. But I'm a flexible artist, so don't worry, we'll make something stylish that suits you.",
+          "cs": "Jsem tetovací umělkyně se 4 lety zkušeností a obrovskou láskou k tetování.\n\nSpecializuji se na linky, ornamentální vzory a černočervené tóny. Jsem ale flexibilní umělkyně, takže se neboj, vytvoříme něco stylovýho, co ti bude sedět.",
+          "ru": "Я тату-мастер с 4-летним опытом и огромной любовью к татуировкам.\n\nЯ специализируюсь на лайнворке, орнаментальных дизайнах и черно-красных тонах. Но я гибкая художница, так что не волнуйся, мы сделаем что-то стильное, что тебе подойдет."
+        }
       },
-      "category": "abstract"
-    }
-  ]
+      {
+        "blockType": "gallery",
+        "source": "curated",
+        "items": [
+          { "image": "spine.webp", "label": { "en": "Spine", "cs": "Páteř", "ru": "Спина" }, "tags": ["ornamental"] },
+          { "image": "arm.webp", "label": { "en": "Arm", "cs": "Ruka", "ru": "Рука" }, "tags": ["linework"] },
+          { "image": "back.webp", "label": { "en": "Back", "cs": "Záda", "ru": "Спина" }, "tags": ["abstract"] }
+        ]
+      }
+    ]
+  }
 }

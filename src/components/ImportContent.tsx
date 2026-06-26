@@ -36,7 +36,7 @@ const ImportContent: React.FC = () => {
       const json = await res.json()
       if (!res.ok || json.ok === false) throw new Error(json.error || `HTTP ${res.status}`)
       setMsg(
-        `Imported into "${json.tenant}": ${json.portfolioCount} portfolio item(s), ${json.imagesUploaded} image(s) uploaded.`,
+        `Imported into "${json.tenant}": ${json.sectionsCount} section(s), ${json.imagesUploaded} image(s) uploaded.`,
       )
     } catch (e) {
       setErr((e as Error).message)
@@ -57,8 +57,8 @@ const ImportContent: React.FC = () => {
       <h3 style={{ margin: '0 0 .25rem' }}>Import content</h3>
       <p style={{ margin: '0 0 1rem', color: 'var(--theme-elevation-500)', maxWidth: 560 }}>
         Upload a <code>content.json</code> and its images to fill or update this tenant&rsquo;s
-        site content and portfolio in one step. Re-running is safe — existing items are updated,
-        not duplicated.
+        site content (page sections, contacts, SEO) in one step. Re-running is safe — existing
+        sections are updated, not duplicated.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem', maxWidth: 560 }}>
         <label style={{ display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
