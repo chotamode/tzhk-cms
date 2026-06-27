@@ -50,7 +50,9 @@
       },
       {
         "blockType": "gallery",
-        "source": "curated",
+        "source": "byTags",
+        "filterTags": ["hats", "scarves", "blankets", "mittens"],
+        "limit": 24,
         "heading": { "ru": "Примеры работ", "en": "Examples" },
         "items": [
           { "image": "photo_1_2025-04-17_17-17-23.jpg", "label": { "ru": "Пример работы 1", "en": "Work 1" }, "tags": ["hats"] },

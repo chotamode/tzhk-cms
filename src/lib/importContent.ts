@@ -253,8 +253,10 @@ export async function importContent(opts: ImportOptions): Promise<ImportResult> 
     const referenced = new Set<string>()
     for (const block of layout) {
       if (block.blockType === 'gallery') {
-        if (block.source === 'byTags') (block.filterTags ?? []).forEach((s) => referenced.add(s))
-        else for (const it of block.items ?? []) (it.tags ?? []).forEach((s) => referenced.add(s))
+        // Collect both: filterTags (byTags rendering) and item tags (used to
+        // tag the seeded media — items seed the library even for byTags blocks).
+        ;(block.filterTags ?? []).forEach((s) => referenced.add(s))
+        for (const it of block.items ?? []) (it.tags ?? []).forEach((s) => referenced.add(s))
       } else if (block.blockType === 'products') {
         for (const it of block.items ?? []) (it.tags ?? []).forEach((s) => referenced.add(s))
       }
@@ -333,7 +335,9 @@ export async function importContent(opts: ImportOptions): Promise<ImportResult> 
     for (const block of layout) {
       if (block.blockType === 'hero' && block.image) {
         await uploadImage(block.image, L(block.title, 'en') || 'Hero')
-      } else if (block.blockType === 'gallery' && block.source !== 'byTags') {
+      } else if (block.blockType === 'gallery') {
+        // Upload + tag items even for byTags galleries: the items seed the media
+        // library; byTags then renders by querying media for those tags.
         for (const it of block.items ?? [])
           await uploadImage(it.image, L(it.label, 'en'), tagIdsFor(it.tags))
       } else if (block.blockType === 'products') {
