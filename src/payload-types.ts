@@ -77,7 +77,11 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    tags: {
+      media: 'media';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     tenants: TenantsSelect<false> | TenantsSelect<true>;
@@ -430,6 +434,14 @@ export interface Tag {
    * Optional namespace so one tag engine can cover several axes.
    */
   kind?: ('category' | 'material' | 'colour' | 'technique' | 'other') | null;
+  /**
+   * All images tagged with this tag.
+   */
+  media?: {
+    docs?: (number | Media)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -748,6 +760,7 @@ export interface TagsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   kind?: T;
+  media?: T;
   updatedAt?: T;
   createdAt?: T;
 }
