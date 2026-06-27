@@ -203,6 +203,27 @@ export async function importContent(opts: ImportOptions): Promise<ImportResult> 
   const mediaCache = new Map<string, number>()
   const uploadImage = async (name: string, alt: string, tagIds?: number[]): Promise<number> => {
     if (mediaCache.has(name)) return mediaCache.get(name) as number
+    // Reuse an existing upload with the same source filename so re-seeding
+    // doesn't pile up duplicate media. Matched by base name (the stored file is
+    // re-encoded to .webp, so the extension differs); tags refreshed on reuse.
+    const base = name.replace(/\.[^./]+$/, '')
+    const existing = await payload.find({
+      collection: 'media',
+      where: { and: [{ tenant: { equals: tenantId } }, { filename: { like: base } }] },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const reused = existing.docs[0]?.id
+    if (reused != null) {
+      const id = Number(reused)
+      if (tagIds?.length) {
+        await payload.update({ collection: 'media', id, data: { tags: tagIds }, overrideAccess: true })
+      }
+      log(`Reused media ${name} → ${id}`)
+      mediaCache.set(name, id)
+      return id
+    }
     const img = await resolveImage(name)
     const created = await payload.create({
       collection: 'media',

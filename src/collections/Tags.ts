@@ -55,5 +55,14 @@ export const Tags: CollectionConfig = {
       ],
       admin: { description: 'Optional namespace so one tag engine can cover several axes.' },
     },
+    {
+      // Reverse relationship: every image tagged with this tag. Read-only,
+      // virtual (no DB column / migration) — handy for managing the library.
+      name: 'media',
+      type: 'join',
+      collection: 'media',
+      on: 'tags',
+      admin: { description: 'All images tagged with this tag.' },
+    },
   ],
 }
