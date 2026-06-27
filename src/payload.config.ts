@@ -138,6 +138,13 @@ export default buildConfig({
       },
       // Super-admins can switch between and manage every tenant.
       userHasAccessToAllTenants: (user) => Boolean(user?.isSuperAdmin),
+      // Don't run the plugin's afterDelete cascade when a tenant is removed.
+      // That cleanup deletes every tenant-scoped doc (media/tags/siteContent)
+      // + each media's storage file as nested ops, which stalls the delete
+      // request indefinitely (it never returns, so nothing is logged). With
+      // this off, deleting a tenant is instant; its docs are left with a null
+      // tenant (the FK is ON DELETE SET NULL) and can be cleaned up separately.
+      cleanupAfterTenantDelete: false,
     }),
     ...storagePlugins,
   ],
