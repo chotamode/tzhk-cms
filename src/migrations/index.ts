@@ -4,6 +4,7 @@ import * as migration_20260624_125614_add_site_content from './20260624_125614_a
 import * as migration_20260624_201409_merge_portfolio_into_site_content from './20260624_201409_merge_portfolio_into_site_content';
 import * as migration_20260625_215633_blocks_layout from './20260625_215633_blocks_layout';
 import * as migration_20260625_222514_tags_gallery_products from './20260625_222514_tags_gallery_products';
+import * as migration_20260713_154849_add_projects_tools from './20260713_154849_add_projects_tools';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20260625_222514_tags_gallery_products.up,
     down: migration_20260625_222514_tags_gallery_products.down,
-    name: '20260625_222514_tags_gallery_products'
+    name: '20260625_222514_tags_gallery_products',
+  },
+  {
+    up: migration_20260713_154849_add_projects_tools.up,
+    down: migration_20260713_154849_add_projects_tools.down,
+    name: '20260713_154849_add_projects_tools'
   },
 ];

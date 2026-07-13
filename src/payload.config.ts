@@ -13,6 +13,8 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Tenants } from './collections/Tenants'
 import { Tags } from './collections/Tags'
+import { Projects } from './collections/Projects'
+import { Tools } from './collections/Tools'
 import { SiteContent } from './collections/SiteContent'
 import { importContentEndpoint } from './endpoints/importContent'
 import { migrations } from './migrations'
@@ -98,7 +100,7 @@ export default buildConfig({
       beforeDashboard: ['/components/ImportContent#default'],
     },
   },
-  collections: [Users, Tenants, SiteContent, Media, Tags],
+  collections: [Users, Tenants, SiteContent, Media, Tags, Projects, Tools],
   endpoints: [importContentEndpoint],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -132,6 +134,9 @@ export default buildConfig({
         media: {},
         // Reusable per-tenant tag taxonomy (media tagging + gallery filtering).
         tags: {},
+        // Portfolio case studies and showcased tools (axon-portfolio).
+        projects: {},
+        tools: {},
         // One editable document per tenant (landing-page content/texts/SEO +
         // the page sections, kept as a block builder on this single document).
         siteContent: { isGlobal: true },

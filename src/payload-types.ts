@@ -72,6 +72,8 @@ export interface Config {
     siteContent: SiteContent;
     media: Media;
     tags: Tag;
+    projects: Project;
+    tools: Tool;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +90,8 @@ export interface Config {
     siteContent: SiteContentSelect<false> | SiteContentSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    tools: ToolsSelect<false> | ToolsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -447,6 +451,81 @@ export interface Tag {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  /**
+   * Card heading, e.g. «Tatushki · doomp.ink».
+   */
+  title: string;
+  /**
+   * A short paragraph about the project.
+   */
+  description: string;
+  /**
+   * Business/tech feature bullets, e.g. «Booking form → PostgreSQL + email».
+   */
+  features?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  category?: ('client' | 'university') | null;
+  /**
+   * e.g. "2025".
+   */
+  year?: string | null;
+  /**
+   * Tech stack line, e.g. "Next.js · Payload CMS · PostgreSQL".
+   */
+  stack?: string | null;
+  /**
+   * Live site URL (optional).
+   */
+  url?: string | null;
+  /**
+   * Preview screenshot (4:3 works best).
+   */
+  image?: (number | null) | Media;
+  /**
+   * Lower numbers appear first.
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tools".
+ */
+export interface Tool {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  name: string;
+  /**
+   * What the tool does and who it is for.
+   */
+  description: string;
+  /**
+   * Link to the tool (optional).
+   */
+  url?: string | null;
+  /**
+   * Shown with a "free" badge on the portfolio.
+   */
+  free?: boolean | null;
+  /**
+   * Lower numbers appear first.
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -488,6 +567,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'tags';
         value: number | Tag;
+      } | null)
+    | ({
+        relationTo: 'projects';
+        value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'tools';
+        value: number | Tool;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -761,6 +848,43 @@ export interface TagsSelect<T extends boolean = true> {
   slug?: T;
   kind?: T;
   media?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  description?: T;
+  features?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  category?: T;
+  year?: T;
+  stack?: T;
+  url?: T;
+  image?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tools_select".
+ */
+export interface ToolsSelect<T extends boolean = true> {
+  tenant?: T;
+  name?: T;
+  description?: T;
+  url?: T;
+  free?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
