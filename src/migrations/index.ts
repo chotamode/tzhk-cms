@@ -5,6 +5,7 @@ import * as migration_20260624_201409_merge_portfolio_into_site_content from './
 import * as migration_20260625_215633_blocks_layout from './20260625_215633_blocks_layout';
 import * as migration_20260625_222514_tags_gallery_products from './20260625_222514_tags_gallery_products';
 import * as migration_20260713_154849_add_projects_tools from './20260713_154849_add_projects_tools';
+import * as migration_20260713_173732_add_portfolio_texts from './20260713_173732_add_portfolio_texts';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20260713_154849_add_projects_tools.up,
     down: migration_20260713_154849_add_projects_tools.down,
-    name: '20260713_154849_add_projects_tools'
+    name: '20260713_154849_add_projects_tools',
+  },
+  {
+    up: migration_20260713_173732_add_portfolio_texts.up,
+    down: migration_20260713_173732_add_portfolio_texts.down,
+    name: '20260713_173732_add_portfolio_texts'
   },
 ];

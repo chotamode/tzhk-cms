@@ -74,6 +74,7 @@ export interface Config {
     tags: Tag;
     projects: Project;
     tools: Tool;
+    portfolioTexts: PortfolioText;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -92,6 +93,7 @@ export interface Config {
     tags: TagsSelect<false> | TagsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     tools: ToolsSelect<false> | ToolsSelect<true>;
+    portfolioTexts: PortfolioTextsSelect<false> | PortfolioTextsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -525,6 +527,81 @@ export interface Tool {
   createdAt: string;
 }
 /**
+ * Site copy for the portfolio. Empty fields fall back to the built-in text.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolioTexts".
+ */
+export interface PortfolioText {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  /**
+   * Browser tab / search snippet / social preview.
+   */
+  meta?: {
+    /**
+     * Page <title>. "{brand}" is replaced with the brand name.
+     */
+    title?: string | null;
+    description?: string | null;
+  };
+  /**
+   * Home panel.
+   */
+  hero?: {
+    /**
+     * Kicker line above the headline.
+     */
+    lead?: string | null;
+    headline?: string | null;
+    sub?: string | null;
+    /**
+     * Third button label (opens contact).
+     */
+    cta?: string | null;
+  };
+  /**
+   * Work panel heading (the cases themselves live in Projects).
+   */
+  work?: {
+    title?: string | null;
+    subtitle?: string | null;
+  };
+  /**
+   * Services panel.
+   */
+  services?: {
+    title?: string | null;
+    items?:
+      | {
+          t: string;
+          d: string;
+          id?: string | null;
+        }[]
+      | null;
+    academicTitle?: string | null;
+    academicLead?: string | null;
+    academicItems?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * Contact panel heading (channels/env-driven values stay on the site).
+   */
+  contact?: {
+    title?: string | null;
+    lead?: string | null;
+  };
+  footer?: {
+    tagline?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -575,6 +652,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'tools';
         value: number | Tool;
+      } | null)
+    | ({
+        relationTo: 'portfolioTexts';
+        value: number | PortfolioText;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -885,6 +966,66 @@ export interface ToolsSelect<T extends boolean = true> {
   url?: T;
   free?: T;
   order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolioTexts_select".
+ */
+export interface PortfolioTextsSelect<T extends boolean = true> {
+  tenant?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  hero?:
+    | T
+    | {
+        lead?: T;
+        headline?: T;
+        sub?: T;
+        cta?: T;
+      };
+  work?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+      };
+  services?:
+    | T
+    | {
+        title?: T;
+        items?:
+          | T
+          | {
+              t?: T;
+              d?: T;
+              id?: T;
+            };
+        academicTitle?: T;
+        academicLead?: T;
+        academicItems?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+      };
+  contact?:
+    | T
+    | {
+        title?: T;
+        lead?: T;
+      };
+  footer?:
+    | T
+    | {
+        tagline?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

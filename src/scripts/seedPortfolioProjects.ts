@@ -164,9 +164,9 @@ const toFeatureRows = (items: string[]): { text: string }[] => items.map((text) 
 
 const upsertImage = async (
   payload: Payload,
-  tenantId: number | string,
+  tenantId: number,
   seed: ProjectSeed,
-): Promise<number | string | null> => {
+): Promise<number | null> => {
   if (!imagesDir) return null
   const existing = await payload.find({
     collection: 'media',
