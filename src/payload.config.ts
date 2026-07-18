@@ -47,10 +47,24 @@ const allowedOrigins = (process.env.CORS_ORIGINS || serverURL)
 // importMap regardless of whether S3_* env is set when `generate:importmap`
 // runs — otherwise a generation without S3_BUCKET silently drops the
 // S3ClientUploadHandler and the production server warns it can't be found.
+//
+// When S3_PUBLIC_URL is set (a public R2/CDN base, e.g. the bucket's r2.dev
+// domain or a custom domain), file URLs point straight at it so reads are
+// served from the edge. Without it, reads fall back to streaming through this
+// server's own /api/media/file/* route on every request (an extra origin
+// round-trip per image, no edge caching).
+const s3PublicURL = process.env.S3_PUBLIC_URL
 const storagePlugins: Plugin[] = [
   s3Storage({
     enabled: Boolean(process.env.S3_BUCKET),
-    collections: { media: true },
+    collections: {
+      media: s3PublicURL
+        ? {
+            generateFileURL: ({ filename, prefix }) =>
+              `${s3PublicURL}/${prefix ? `${prefix}/` : ''}${filename}`,
+          }
+        : true,
+    },
     bucket: process.env.S3_BUCKET || '',
     config: {
       region: process.env.S3_REGION || 'auto',
