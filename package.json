@@ -25,6 +25,7 @@
     "@payloadcms/richtext-lexical": "3.85.1",
     "@payloadcms/storage-s3": "3.85.1",
     "@payloadcms/ui": "3.85.1",
+    "@sentry/nextjs": "^10.67.0",
     "cross-env": "10.1.0",
     "dotenv": "16.4.7",
     "graphql": "^16.8.1",
