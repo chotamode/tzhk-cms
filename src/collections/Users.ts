@@ -20,7 +20,7 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'email',
   },
-  auth: true,
+  auth: { useAPIKey: true },
   // Without explicit access control any authenticated user could touch the
   // users collection. Lock it down following Payload's official multi-tenant
   // example.

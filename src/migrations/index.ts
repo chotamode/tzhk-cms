@@ -6,6 +6,7 @@ import * as migration_20260625_215633_blocks_layout from './20260625_215633_bloc
 import * as migration_20260625_222514_tags_gallery_products from './20260625_222514_tags_gallery_products';
 import * as migration_20260713_154849_add_projects_tools from './20260713_154849_add_projects_tools';
 import * as migration_20260713_173732_add_portfolio_texts from './20260713_173732_add_portfolio_texts';
+import * as migration_20260725_165124_add_user_api_key from './20260725_165124_add_user_api_key';
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20260713_173732_add_portfolio_texts.up,
     down: migration_20260713_173732_add_portfolio_texts.down,
     name: '20260713_173732_add_portfolio_texts'
+  },
+  {
+    up: migration_20260725_165124_add_user_api_key.up,
+    down: migration_20260725_165124_add_user_api_key.down,
+    name: '20260725_165124_add_user_api_key',
   },
 ];
