@@ -10,6 +10,14 @@ const adminsOnly: Access = ({ req }) => isSuperAdmin(req.user)
 // document (a tenant user can manage their own profile but not other users).
 const selfOrSuperAdmin: Access = ({ req }) => {
   const { user } = req
+  // TEMP DEBUG (remove after diagnosing the API-key save 403):
+  console.log('[DEBUG selfOrSuperAdmin]', JSON.stringify({
+    hasUser: Boolean(user),
+    id: user?.id,
+    email: user?.email,
+    isSuperAdmin: user?.isSuperAdmin,
+    collection: (user as { collection?: string } | undefined)?.collection,
+  }))
   if (!user) return false
   if (isSuperAdmin(user)) return true
   return { id: { equals: user.id } }
