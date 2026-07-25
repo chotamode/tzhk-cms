@@ -8,15 +8,21 @@ const adminsOnly: Access = ({ req }) => isSuperAdmin(req.user)
 
 // Super-admins can read/update everyone; everybody else is scoped to their own
 // document (a tenant user can manage their own profile but not other users).
-const selfOrSuperAdmin: Access = ({ req }) => {
+const selfOrSuperAdmin: Access = (args) => {
+  const { req } = args
   const { user } = req
   // TEMP DEBUG (remove after diagnosing the API-key save 403):
   console.log('[DEBUG selfOrSuperAdmin]', JSON.stringify({
     hasUser: Boolean(user),
-    id: user?.id,
+    userId: user?.id,
     email: user?.email,
     isSuperAdmin: user?.isSuperAdmin,
     collection: (user as { collection?: string } | undefined)?.collection,
+    targetId: (args as { id?: unknown }).id,
+    reqUrl: req.url,
+    reqMethod: (req as unknown as { method?: string }).method,
+    hasAuthHeader: Boolean(req.headers?.get?.('authorization')),
+    hasCookieHeader: Boolean(req.headers?.get?.('cookie')),
   }))
   if (!user) return false
   if (isSuperAdmin(user)) return true
